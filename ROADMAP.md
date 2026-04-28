@@ -5,6 +5,31 @@ This mod integrates Grand Theft Auto III's two separate rail systems—the subwa
 
 ---
 
+## Available Tools
+
+| Tool | Purpose | Source |
+|------|---------|--------|
+| **X Train Track Editor** | Create/edit tracks.dat | GTAMods Wiki |
+| **IMG Tool v2.0** | Modify .img archives | Community |
+| **Blender** | 3D modeling, with RW plugin | blender.org |
+| **TXD Workshop** | Create/edit textures | GTAMods Wiki |
+| **G-TXD** | Alternative texture editor | Community |
+| **MEd (GTA Map Editor)** | Add objects/stations to map | GTAMods Wiki |
+| **Moo Mapper** | Advanced map editing | GTAMods Wiki |
+| **GTA Stuff Toolkit** | Validate DFF/TXD files | gtastuff.com |
+| **Hex Editor** | View/debug binary files | ImHex |
+
+### Required Tools
+
+- X Train Track Editor (tracks)
+- IMG Tool v2.0 (file management)
+- Blender + RenderWare plugin (3D modeling)
+- TXD Workshop (textures)
+- MEd (map editing)
+- GTA Stuff (validation)
+
+---
+
 ## Phase 1: Planning & Research
 
 ### 1.1 Understand Current Track System
@@ -170,7 +195,7 @@ Position_X, Position_Y, Position_Z, Rotation_X, Rotation_Y, Rotation_Z, Frames,
 
 (Recommended for custom look)
 
-**Software:** ZModeler 2 or 3D Studio Max with RenderWare plugin
+**Software:** Blender with RenderWare plugin
 
 #### Design Specifications
 - **Polygon Count**: 3,000-5,000 polygons (GTA 3 era standard)
@@ -591,33 +616,6 @@ For each failure, note:
    - Use similar polygon density as existing infrastructure
    - Maintain perspective and scale consistency
    - Reference existing elevated structures (highway overpasses)
-
----
-
-## Available Tools
-
-| Tool | Purpose | Source |
-|------|---------|--------|
-| **X Train Track Editor** | Create/edit tracks.dat | GTAMods Wiki |
-| **IMG Tool v2.0** | Modify .img archives | Community |
-| **ZModeler 2** | 3D modeling (beginner-friendly) | Commercial | $50-100 |
-| **3D Studio Max** | Professional 3D modeling | Autodesk | $550/year |
-| **Blender** | Free 3D modeling alternative, with RW plugin | blender.org |
-| **TXD Workshop** | Create/edit textures | GTAMods Wiki |
-| **G-TXD** | Alternative texture editor | Community |
-| **MEd (GTA Map Editor)** | Add objects/stations to map | GTAMods Wiki |
-| **Moo Mapper** | Advanced map editing | GTAMods Wiki |
-| **GTA Stuff Toolkit** | Validate DFF/TXD files | gtastuff.com |
-| **Hex Editor** | View/debug binary files | HxD or similar |
-
-## Required Tools
-
-- X Train Track Editor (tracks)
-- IMG Tool v2.0 (file management)
-- Blender + RenderWare plugin OR ZModeler 2 (3D modeling)
-- TXD Workshop (textures)
-- MEd (map editing)
-- GTA Stuff (validation)
 
 ---
 
