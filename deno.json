@@ -1,0 +1,10 @@
+{
+  "tasks": {
+    "find-gta3": "deno run --allow-read --allow-run --allow-write scripts/find-gta3.ts"
+  },
+  "imports": {
+    "@std/assert": "jsr:@std/assert@1",
+    "@std/fs": "jsr:@std/fs@^1.0.23",
+    "@std/path": "jsr:@std/path@^1.1.4"
+  }
+}

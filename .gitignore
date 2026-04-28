@@ -1,23 +1,15 @@
+# Local GTA III configuration
+.env.gta3
+
 ### macOS
-# Finder metadata
+
+# Finder metadata, thumbnails and custom folder icons
 .DS_Store
-
-# Thumbnails
 ._*
-
-# Custom folder icons
-Icon
-
-# Volume root files
-.DocumentRevisions-V100
-.fseventsd
-.Spotlight-V100
-.TemporaryItems
-.Trashes
-.VolumeIcon.icns
-.com.apple.timemachine.donotpresent
+Icon
 
 ### Windows
+
 # Windows thumbnail cache files
 Thumbs.db
 
