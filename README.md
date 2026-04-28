@@ -26,7 +26,7 @@ Fully functional boarding areas
 
 1. Run the self-extracting installer
 2. Select your GTA 3 installation directory
-3. Launch GTA 3 and start a new game to experience the light rail system
+3. Launch GTA 3 and start a new game
 
 ## System Requirements
 
