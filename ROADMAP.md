@@ -70,8 +70,6 @@ Key technical details:
 ```
 - tracks.dat (existing Portland El)
 - tracks2.dat (existing subway)
-- train.dat (Portland El camera)
-- train2.dat (subway camera)
 ```
 
 #### Process
@@ -130,7 +128,7 @@ X Train Track Editor
 
 #### File
 
-`train3.dat` (following format of existing train.dat)
+Question: How is cinematic camera data stored in the game files?
 
 #### Process
 
@@ -147,7 +145,7 @@ X Train Track Editor
    - Ensure smooth transitions between nodes
 
 3. **Reference Existing Data**
-   - Study `train.dat` structure for proper formatting
+   - Study game data structure for proper formatting
    - Match the existing camera system's approach
    - Use GTAMods Wiki documentation for exact syntax
 
@@ -484,8 +482,7 @@ Each station should include:
 
 1. Ensure all backups are secure
 2. Verify all modified files are in place:
-   - `tracks3.dat` or modified `tracks.dat` → `GTA3/data/paths/`
-   - `train3.dat` or modified `train.dat` → `GTA3/data/paths/`
+   - `tracks3.dat` and/or modified `tracks.dat` → `GTA3/data/paths/`
    - `default.ide` updated → `GTA3/data/`
    - `handling.cfg` updated → `GTA3/data/`
    - `gta3.ipl` updated → `GTA3/data/` (with stations)
@@ -634,9 +631,6 @@ GTA3/
 │   │   ├── tracks.dat (existing Portland El)
 │   │   ├── tracks2.dat (existing subway)
 │   │   ├── tracks3.dat (NEW - your light rail)
-│   │   ├── train.dat (Portland El camera)
-│   │   ├── train2.dat (subway camera)
-│   │   └── train3.dat (NEW - your camera)
 │   ├── default.ide (vehicle definitions - MODIFY)
 │   ├── handling.cfg (vehicle physics - MODIFY)
 │   └── gta3.ipl (map objects - MODIFY for stations)
@@ -663,7 +657,6 @@ FILES TO MODIFY:
 
 FILES TO BACKUP (don't modify):
 - tracks.dat, tracks2.dat
-- train.dat, train2.dat
 - gta3.img, txd.img (backup originals before IMG Tool edit)
 ```
 
