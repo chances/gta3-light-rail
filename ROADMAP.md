@@ -21,7 +21,8 @@ Key technical details:
 - Trains only travel counterclockwise along inner lanes
 - The two systems currently operate independently with no physical connection
 
-**Action Items:**
+#### Action Items
+
 1. Extract and examine the original `tracks.dat`, `train.dat`, and `train2.dat` files from your GTA 3 installation
 2. Study the file format structure (binary format with waypoint data)
 3. Open files with a hex editor or dedicated tool to understand node layout
@@ -30,7 +31,8 @@ Key technical details:
 
 ### 1.2 Map Out Your Route
 
-**Route Planning:**
+#### Route Planning
+
 - Create connecting tracks between the Portland El and subway system
 - Extend the new connector line to Francis International Airport in Shoreside Vale
 - Identify optimal junction points where the two systems can physically merge
@@ -46,10 +48,13 @@ Key technical details:
   - Visual reference map showing all three final rail lines
   - Elevation profiles
 
-**New Connector Route:**
-- Connect Portland El to subway system (identify closest intersection points)
-- Extend from connection point toward Shoreside Vale
-- Terminus at Francis International Airport terminal
+#### New Connector Route
+
+- Northern Terminus: Sweeney Hospital (Portland landmark)
+- Southern Terminus: Francis International Airport (Shoreside Vale)
+- Connect Portland El to subway system at optimal junction points
+- Plan 3-5 intermediate stations between the two terminii
+- Route should provide efficient cross-island transit connectivity
 
 ---
 
@@ -57,9 +62,11 @@ Key technical details:
 
 ### 2.1 Extract & Backup Original Files
 
-**Location:** `GTA3/data/paths/`
+#### Location
 
-**Files to Back Up:**
+`GTA3/data/paths/`
+
+#### Files to Back Up
 ```
 - tracks.dat (existing Portland El)
 - tracks2.dat (existing subway)
@@ -67,19 +74,22 @@ Key technical details:
 - train2.dat (subway camera)
 ```
 
-**Process:**
+#### Process
+
 1. Create a `backup/` folder in your GTA 3 directory
 2. Copy original files as-is
 3. Work on copies, never modify originals
 
 ### 2.2 Create New Track Paths
 
-**Tool Required:** X Train Track Editor
+#### Tool Required
+
+X Train Track Editor
 - Supports GTA 3 with 3D visualization
 - Superior to older Train Track Editor for this project
 - Allows visual debugging of track placement
 
-**Workflow:**
+#### Workflow
 
 1. **Open the Editor**
    - Launch X Train Track Editor
@@ -110,7 +120,7 @@ Key technical details:
    - Save as new file: `tracks_lightrail.dat` or `tracks3.dat`
    - Verify file integrity before proceeding
 
-**Technical Notes:**
+#### Technical Notes
 - The game uses node-based paths: linked series of waypoints
 - Each waypoint includes XYZ coordinates
 - Spacing determines speed (closer nodes = slower movement)
@@ -118,9 +128,11 @@ Key technical details:
 
 ### 2.3 Create Cinematic Camera Data
 
-**File:** `train3.dat` (following format of existing train.dat)
+#### File
 
-**Process:**
+`train3.dat` (following format of existing train.dat)
+
+#### Process
 
 1. **Understand the Format**
    - Each entry defines a camera node with position, angle, and timing
@@ -144,7 +156,8 @@ Key technical details:
    - Expand once working
    - Fix any formatting errors immediately
 
-**Camera Node Example Structure:**
+#### Camera Node Example Structure
+
 ```
 Position_X, Position_Y, Position_Z, Rotation_X, Rotation_Y, Rotation_Z, Frames,
 ```
@@ -155,11 +168,13 @@ Position_X, Position_Y, Position_Z, Rotation_X, Rotation_Y, Rotation_Z, Frames,
 
 ### 3.1 Design Light Rail Vehicle
 
-**Option A: Create from Scratch** (Recommended for custom look)
+#### Option A: Create from Scratch
+
+(Recommended for custom look)
 
 **Software:** ZModeler 2 or 3D Studio Max with RenderWare plugin
 
-**Design Specifications:**
+#### Design Specifications
 - **Polygon Count**: 3,000-5,000 polygons (GTA 3 era standard)
 - **Dimensions**: Single or double-car configuration
 - **Components**:
@@ -169,7 +184,8 @@ Position_X, Position_Y, Position_Z, Rotation_X, Rotation_Y, Rotation_Z, Frames,
   - Windows and interior seating (optional but immersive)
   - Coupling mechanisms between cars (if multi-car)
 
-**Modeling Workflow:**
+#### Modeling Workflow
+
 1. Create basic geometric shapes for body
 2. Add door frames and openings
 3. Model interior with basic seats
@@ -177,26 +193,33 @@ Position_X, Position_Y, Position_Z, Rotation_X, Rotation_Y, Rotation_Z, Frames,
 5. Ensure symmetry and proportional accuracy
 6. Optimize mesh for game engine
 
-**Option B: Modify Existing Train Model** (Faster prototyping)
+#### Option B: Modify Existing Train Model
 
-**Process:**
+(Faster prototyping)
+
+#### Process
+
 1. Extract existing `train.dff` from `gta3.img`
 2. Import into 3D editor
 3. Adjust proportions and geometry to light rail aesthetic
 4. Retexture with new livery
 5. Export as new model
 
-**Advantages:** Faster, guaranteed compatibility, fewer unknowns
+#### Advantages
 
-**Option A vs B Decision Matrix:**
+Faster, guaranteed compatibility, fewer unknowns
+
+#### Option A vs B Decision Matrix
 - Choose **Option A** if you want unique visual identity
 - Choose **Option B** if you want faster initial release/testing
 
 ### 3.2 Export to DFF Format
 
-**Format:** RenderWare binary stream (.dff)
+#### Format
 
-**Export Process:**
+RenderWare binary stream (.dff)
+
+#### Export Process
 1. In your 3D editor, export as RenderWare DFF
 2. Use appropriate export settings:
    - Enable RenderWare 3.3+ format
@@ -204,22 +227,26 @@ Position_X, Position_Y, Position_Z, Rotation_X, Rotation_Y, Rotation_Z, Frames,
    - Embed textures or maintain external references
 3. Verify file structure with hex editor (should start with `0xD` magic bytes for DFF)
 
-**Validation:**
+#### Validation
+
 - Use GTA Stuff Modding Toolkit to validate DFF integrity
 - Check polygon count and memory footprint
 - Preview model in toolkit viewer
 - Ensure no corrupted geometry
 
-**File Naming:** `lightrail.dff`
+#### File Naming
+
+`lightrail.dff`
 
 ### 3.3 Create Textures (TXD)
 
-**Texture Specifications:**
+#### Texture Specifications
+
 - **Resolution**: Design at 1024x1024, optimize down to 512x512 or 256x256
 - **Format**: PNG or BMP for editing, export to TXD format
 - **UV Mapping**: Must align with 3D model's UV coordinates
 
-**Design Process:**
+#### Design Process
 
 1. **Plan Livery**
    - Design color scheme for light rail
@@ -247,9 +274,11 @@ Position_X, Position_Y, Position_Z, Rotation_X, Rotation_Y, Rotation_Z, Frames,
    - Verify colors match reference
    - Test at game resolution
 
-**File Naming:** `lightrail.txd`
+#### File Naming
 
-**Texture Organization Example:**
+`lightrail.txd`
+
+#### Texture Organization Example
 ```
 lightrail.txd
 ├── lightrail_body (main exterior)
@@ -264,9 +293,11 @@ lightrail.txd
 
 ### 4.1 Add Vehicle to Game Files
 
-**File:** `GTA3/data/default.ide`
+#### File
 
-**Process:**
+`GTA3/data/default.ide`
+
+#### Process
 
 1. **Locate default.ide**
    - Found in `GTA3/data/` directory
@@ -296,9 +327,11 @@ lightrail.txd
 
 ### 4.2 Import Models into IMG Archive
 
-**Tool Required:** IMG Tool v1.4 or v2.0
+#### Tool Required
 
-**Process:**
+IMG Tool v1.4 or v2.0
+
+#### Process
 
 1. **Open gta3.img**
    - Navigate to `GTA3/models/`
@@ -334,13 +367,17 @@ lightrail.txd
    - Confirm both DFF and TXD present
    - Note exact names for later reference
 
-**Critical:** Ensure "read-only" is unchecked for entire GTA 3 installation folder, or IMG Tool cannot save changes.
+#### Critical
+
+Ensure "read-only" is unchecked for entire GTA 3 installation folder, or IMG Tool cannot save changes.
 
 ### 4.3 Link Tracks to New Vehicle
 
-**File:** `GTA3/data/handling.cfg`
+#### File
 
-**Process:**
+`GTA3/data/handling.cfg`
+
+#### Process
 
 1. **Open handling.cfg** with Notepad++
    - Find the TRAIN entry (search for "TRAIN")
@@ -383,11 +420,12 @@ lightrail.txd
 
 ### 4.4 Create Station Zones
 
-**Files Involved:** 
+#### Files Involved
+
 - `GTA3/data/gta3.ipl` (interior placement)
 - Station object models (.dff/.txd)
 
-**Process:**
+#### Process
 
 1. **Choose Mapping Tool**
    - **MEd** (GTA Map Editor) - intuitive GUI
@@ -423,7 +461,8 @@ lightrail.txd
    - Verify all objects placed correctly
    - Check for overlapping collision models
 
-**Station Structure Example:**
+#### Station Structure Example
+
 ```
 Each station should include:
 - Platform (raised surface for passengers)
@@ -441,7 +480,8 @@ Each station should include:
 
 ### 5.1 Initial Load Test
 
-**Preparation:**
+#### Preparation
+
 1. Ensure all backups are secure
 2. Verify all modified files are in place:
    - `tracks3.dat` or modified `tracks.dat` → `GTA3/data/paths/`
@@ -451,14 +491,16 @@ Each station should include:
    - `gta3.ipl` updated → `GTA3/data/` (with stations)
    - Models in `gta3.img` and `txd.img`
 
-**Load Test Procedure:**
+#### Load Test Procedure
+
 1. Launch GTA 3
 2. Monitor console for errors (if debug mode available)
 3. Reach game main menu without crashes
 4. Load a saved game or start new game
 5. Document any error messages
 
-**Troubleshooting Crashes:**
+#### Troubleshooting Crashes
+
 - **On startup**: Check default.ide syntax, verify model IDs
 - **During load**: Check IMG archive integrity, file naming
 - **In-game CTD**: Check track path validity, handling.cfg syntax
@@ -479,13 +521,15 @@ Each station should include:
 - [ ] Cinematic camera activates during ride (if configured)
 - [ ] No clipping through buildings or terrain
 
-**Testing Locations:**
+#### Testing Locations
+
 1. Start at easternmost station
 2. Travel full circuit in sequence
 3. Test each station's entry/exit zones
 4. Verify no impossible paths exist
 
-**Issue Documentation:**
+#### Issue Documentation
+
 For each failure, note:
 - Station number
 - Exact behavior
@@ -494,25 +538,29 @@ For each failure, note:
 
 ### 5.3 Gameplay Refinement
 
-**Speed Adjustment:**
+#### Speed Adjustment
+
 - Current: Test default handling parameters
 - Too slow: Reduce mass, increase acceleration in handling.cfg
 - Too fast: Increase drag, reduce max velocity
 - Fine-tune for realistic transit speed
 
-**Camera Angles:**
+#### Camera Angles
+
 - Review cinematic shots during rides
 - Adjust train3.dat nodes if angles are wrong
 - Test from different vantage points
 - Verify smooth transitions between nodes
 
-**Station Optimization:**
+#### Station Optimization
+
 - Add/remove stations based on route feel
 - Test spacing between stations (15-30 seconds travel time is good)
 - Verify each station is visually distinct
 - Ensure platforms don't block traffic below
 
-**Visual Polish:**
+#### Visual Polish
+
 - Check texture appearance at distance and close-up
 - Verify lighting looks right in different times
 - Test in rain/weather for texture visibility
@@ -520,7 +568,7 @@ For each failure, note:
 
 ### 5.4 Visual Polish
 
-**Environmental Details:**
+#### Environmental Details
 
 1. **Overhead Infrastructure**
    - Add catenary/power lines between poles
