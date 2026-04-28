@@ -1,7 +1,7 @@
 # GTA 3 Light Rail Expansion Mod - Development Plan
 
 ## Project Overview
-A fully functional light rail system expansion for Grand Theft Auto III that extends the existing elevated rail network across all three islands of Liberty City (Portland, Staunton Island, and Shoreside Vale).
+This mod integrates Grand Theft Auto III's two separate rail systems—the subway loop and the Portland El—by adding connecting tracks between them, resulting in three total rail lines. The new connecting line extends further to reach Francis International Airport in Shoreside Vale. For detailed information on the existing subway system, see https://www.grandtheftwiki.com/Subway_in_GTA_III.
 
 ---
 
@@ -9,8 +9,8 @@ A fully functional light rail system expansion for Grand Theft Auto III that ext
 
 ### 1.1 Understand Current Track System
 
-The existing rail infrastructure in GTA 3 consists of:
-- **Portland El**: An elevated line confined within Portland
+The existing rail infrastructure in GTA 3 consists of two separate systems:
+- **Portland El**: An elevated line confined within Portland (see https://www.grandtheftwiki.com/Subway_in_GTA_III for details)
 - **Subway System**: Underground, connected to all three islands
 
 Key technical details:
@@ -19,32 +19,37 @@ Key technical details:
   - `train.dat` handles the Portland El camera system
   - `train2.dat` handles the subway camera system
 - Trains only travel counterclockwise along inner lanes
+- The two systems currently operate independently with no physical connection
 
 **Action Items:**
 1. Extract and examine the original `tracks.dat`, `train.dat`, and `train2.dat` files from your GTA 3 installation
 2. Study the file format structure (binary format with waypoint data)
 3. Open files with a hex editor or dedicated tool to understand node layout
 4. Take screenshots of existing track routes in-game for reference
+5. Decide on distribution architecture: Create a self-extracting executable installer that handles file placement automatically
 
 ### 1.2 Map Out Your Route
 
 **Route Planning:**
-- Design elevated light rail routes across all three islands
-- Plan 6-12 station locations for manageable scope
+- Create connecting tracks between the Portland El and subway system
+- Extend the new connector line to Francis International Airport in Shoreside Vale
+- Identify optimal junction points where the two systems can physically merge
+- Plan station locations along the new connector route (3-5 stations)
 - Consider real urban geography:
   - Follow existing street grids
-  - Connect major districts (hospitals, airports, commercial areas)
+  - Connect to major districts and airport terminal
   - Account for vertical elevation changes
 - Create a visual map document with:
   - All waypoint coordinates
-  - Station locations
-  - Visual reference map
+  - Connector junction points
+  - New station locations
+  - Visual reference map showing all three final rail lines
   - Elevation profiles
 
-**Example Station Locations:**
-- Portland: Downtown core, Red Light District, Docks
-- Staunton Island: Liberty Campus, Financial District, Shoreside Bridge approach
-- Shoreside Vale: Airport connection, Industrial area, Residential
+**New Connector Route:**
+- Connect Portland El to subway system (identify closest intersection points)
+- Extend from connection point toward Shoreside Vale
+- Terminus at Francis International Airport terminal
 
 ---
 
