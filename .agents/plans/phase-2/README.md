@@ -36,7 +36,45 @@ from `.env.gta3`).
 
 ---
 
-## 2.2 Author the Connector Track (`tracks2.dat`)
+## 2.2 Route Survey
+
+Before authoring any nodes, pin down the five coordinates / geometry facts that are still open
+(see `routing.md` questions 1–3, 6–7). **Prefer a map editor** over in-game walking — MEd or a
+similar GTA III world viewer lets you click geometry and read world-space XYZ directly without
+need for a coordinate-display cheat. Fall back to in-game surveying via the CLEO Redux plugin
+(log `GET_PLAYER_COORDINATES` to the console) only if the map editor cannot provide a reading.
+
+- [ ] **Q1 — El junction node.** In MEd (or `tracks.dat` directly), walk the node sequence
+      around the major road between Chinatown and Portland View. Identify the last El node before
+      the road crossing on the southbound (counterclockwise) side. Record its index and XYZ — this
+      is the fork point; the new branch departs from the very next node slot.
+
+- [ ] **Q2 — Callahan Bridge deck height.** Open the Callahan Bridge in the map editor and read
+      the Z of the road surface at mid-span. Confirm the approach grades on both the Portland and
+      Staunton sides ramp smoothly from street level (~7–8) to deck level. Record the exact Z so
+      the bridge-crossing nodes can be authored precisely.
+
+- [ ] **Q3 — Staunton Island crossing median width.** In the map editor, inspect the east–west
+      avenue that the alignment follows from the Callahan Bridge to the west-edge T-junction.
+      Determine whether the painted median is wide enough for a single at-grade track (ideally
+      ≥ 4 units), or whether the alignment must share the kerb lane with traffic instead. Note
+      the avenue's Y coordinate for use as the constant Y value across the Staunton crossing
+      segment.
+
+- [ ] **Q6 — Shoreside Vale highway curve and FIA access road.** Trace the avenue / highway in
+      the map editor from the Shoreside Lift Bridge southward. Record:
+      1. The approximate XY where the highway curves north.
+      2. The XY of the intersection with the FIA access road (the turn-west waypoint).
+      These two points define the shape of the final approach segment.
+
+- [ ] **Q7 — FIA terminal station site.** Survey the FIA apron perimeter (preferably in the map
+      editor; otherwise on foot in-game) to find a spot within comfortable walking distance of the
+      main terminal entrance. Record the XYZ of the proposed platform centre. This becomes the
+      terminal node for the FIA Terminal station.
+
+---
+
+## 2.3 Author the Connector Track (`tracks2.dat`)
 
 The new alignment is **electrified** — overhead catenary wire runs the full length of the route. Node Z values must
 account for the alignment type at each segment:
@@ -109,7 +147,7 @@ cross-island routes. Add it as `deno task generate-tracks`.
 
 ---
 
-## 2.3 Validate & Iterate
+## 2.4 Validate & Iterate
 
 - [ ] Load modified files in-game and ride the new route.
 - [ ] Check for terrain clipping, broken segments, and incorrect station exits.
