@@ -316,10 +316,33 @@
 import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7.9.0/+esm";
 
 // ---------------------------------------------------------------------------
+// Geometry — ported from lib/geometry.ts (source of truth)
+// ---------------------------------------------------------------------------
+
+// Distance threshold (meters) below which endpoints are considered coincident.
+const CLOSE_THRESHOLD_M = 0.01;
+
+/**
+ * Returns a node array guaranteed to form a closed loop.
+ * Appends a copy of the first node if the endpoints are farther apart than
+ * CLOSE_THRESHOLD_M (XY only; elevation is ignored at the join).
+ * See lib/geometry.ts — closeTrackPath.
+ */
+function closeTrackPath(nodes) {
+  if (nodes.length < 2) return nodes;
+  const first = nodes[0];
+  const last  = nodes[nodes.length - 1];
+  const dx = last.x - first.x;
+  const dy = last.y - first.y;
+  if (Math.sqrt(dx * dx + dy * dy) <= CLOSE_THRESHOLD_M) return nodes;
+  return [...nodes, { ...first }];
+}
+
+// ---------------------------------------------------------------------------
 // State
 // ---------------------------------------------------------------------------
 
-/** @type {{ nodes: TrackNode[], stations: TrackNode[], label: string, color: string }[]} */
+/** @type {{ nodes: TrackNode[], stations: TrackNode[], label: string, color: string, closed: boolean }[]} */
 const tracks = [];
 
 // Color palette for successive files loaded
@@ -422,6 +445,7 @@ async function loadDat(text, filename) {
   // Determine color: tracks.dat = El (orange), tracks2.dat = Subway (blue), others cycle
   let color;
   const lc = filename.toLowerCase();
+  const isDefaultTrack = /^tracks2?\.dat$/i.test(filename);
   if (lc.includes("tracks2")) color = PALETTE[1];
   else if (lc.includes("tracks")) color = PALETTE[0];
   else color = PALETTE[tracks.length % PALETTE.length];
@@ -429,7 +453,11 @@ async function loadDat(text, filename) {
   // Label: prefer the filename stem
   const label = filename.replace(/\.dat$/i, "");
 
-  tracks.push({ ...data, label, color });
+  // Close the path for the game's default track files (tracks.dat / tracks2.dat),
+  // even if the underlying data does not end at its start point.
+  const nodes = isDefaultTrack ? closeTrackPath(data.nodes) : data.nodes;
+
+  tracks.push({ ...data, nodes, label, color, closed: isDefaultTrack });
 
   // Switch to viewer on first file
   dropZone.style.display = "none";
