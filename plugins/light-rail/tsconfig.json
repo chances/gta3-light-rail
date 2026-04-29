@@ -1,0 +1,33 @@
+{
+  // TypeScript config for IDE support when developing the light-rail plugin.
+  //
+  // When this folder is deployed to CLEO/light-rail/, CLEO Redux uses the
+  // parent CLEO/tsconfig.json (auto-generated on first run) which points at
+  // the real .config/ type definitions.  This file is provided so that editors
+  // (VS Code, etc.) give you autocomplete and type-checking during development.
+  //
+  // Before editing, copy the generated CLEO/.config/ folder next to plugins/:
+  //
+  //   plugins/
+  //   ├── .config/       ← copy from <GTA3>/CLEO/.config/
+  //   │   ├── gta3.d.ts
+  //   │   └── enums.ts
+  //   └── light-rail/
+  //       ├── index.ts
+  //       └── tsconfig.json  ← this file
+  //
+  // See: https://re.cleo.li/docs/en/typescript.html
+  "compilerOptions": {
+    "target": "ES2020",
+    "lib": ["ES2020"],
+    // CLEO Redux compiles TS in-process; noEmit keeps this config for
+    // type-checking only, matching how CLEO treats the source files.
+    "noEmit": true,
+    "strict": true,
+    "moduleResolution": "node",
+    // Point at the CLEO-generated type definitions.
+    // Adjust this path if you place .config/ elsewhere relative to this file.
+    "typeRoots": ["../.config"]
+  },
+  "files": ["index.ts"]
+}

@@ -34,9 +34,15 @@ Planned route is in `.agents/plans/routing.md`. Key decisions to resolve first:
       and checking whether the game loads it without crashing.
 - [ ] **Determine how to load the third track file in-game.**
     
-    Impl a new Cleo Redux plugin named "light-rail" implemented in TypeScript and try it that way
+  1. [x] Scaffold a Cleo Redux plugin named "light-rail" implemented in TypeScript.
+  2. [ ] Load new assets:
     
-    If not supported, the connector must be appended to `tracks2.dat` after the existing subway nodes.
+    - Load new track rights of way, i.e. models and textures
+    - Spawn new train models
+    - Load `tracks3.dat`, somehow?
+    
+    If not supported, this plugin is dead-on-arrival. STOP and reconsider how to integrate a new track alignment with one of the existing trains. Most likely just an extension to the subway alignment.
+
 - [ ] **Confirm junction node** on the Portland El. The branch-off should be near `(963, 13, 22)` (northernmost El
       node). Walk the node sequence in `tracks.dat` to find the correct index so the counterclockwise direction is
       preserved.
