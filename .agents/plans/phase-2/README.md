@@ -41,14 +41,19 @@ from `.env.gta3`).
 The new alignment is **electrified** — overhead catenary wire runs the full length of the route. Node Z values must
 account for the alignment type at each segment:
 
-| Segment                           | Alignment                         | Approx. Z |
-| --------------------------------- | --------------------------------- | --------- |
-| Portland View → Callahan Junction | Elevated viaduct (shared with El) | ~21–22    |
-| Callahan Junction                 | Bridge deck                       | ~12–15    |
-| Newport → Shoreside Terminal      | At-grade surface                  | ~7–8      |
-| Shoreside Terminal → FIA          | At-grade surface                  | ~6–7      |
+| Segment                                                 | Alignment                               | Approx. Z  |
+| ------------------------------------------------------- | --------------------------------------- | ---------- |
+| El junction (Chinatown / Portland View major road)      | Elevated, branch off El viaduct         | ~21–22     |
+| Branch descent south to Callahan Bridge avenue          | Ramp down from viaduct to street grade  | ~22 → ~7   |
+| Callahan Bridge avenue westward (at-grade median)       | At-grade median                         | ~7–8       |
+| Callahan Bridge crossing                                | Bridge deck                             | ~12–15     |
+| Staunton Island crossing (east edge → west edge avenue) | At-grade median (or with traffic)       | ~7–8       |
+| Staunton west edge avenue, turning north                | At-grade                                | ~7–8       |
+| Shoreside Lift Bridge crossing                          | Bridge deck (à la Steel Bridge, PDX)    | ~12–15     |
+| Shoreside Vale avenue / highway (curves north to FIA)   | At-grade highway median                 | ~6–7       |
+| FIA terminal approach (future alignment)                | At-grade, turns west to terminal        | ~5–6       |
 
-Planned route is in `.agents/plans/routing.md`. Key decisions to resolve first:
+Planned route is in `.agents/research/routing.md`. Key decisions to resolve first:
 
 - [x] **Confirm the game does not crash with a third track file.** Test by adding a minimal `tracks3.dat` (3–4 nodes)
       and checking whether the game loads it without crashing.
@@ -81,9 +86,10 @@ Planned route is in `.agents/plans/routing.md`. Key decisions to resolve first:
   > and
   > [`asi-plugin-d-lang.md`](https://github.com/chances/gta3-light-rail/blob/1850e5ff5818fea2366dfb805470498d56132062/.agents/plans/phase-2/asi-plugin-d-lang.md).
 
-- [ ] **Confirm junction node** on the Portland El. The branch-off should be near `(963, 13, 22)` (northernmost El
-      node). Walk the node sequence in `tracks.dat` to find the correct index so the counterclockwise direction is
-      preserved.
+- [ ] **Confirm junction node** on the Portland El. The branch-off should be on the major road between Chinatown
+      and Portland View — roughly where the El viaduct crosses that street. Walk the node sequence in `tracks.dat`
+      to find the correct index; the branch must depart the El loop in the counterclockwise direction, and the
+      descent ramp to street grade begins immediately south of the junction node.
 - [ ] **Confirm Callahan Bridge deck height** in-game (estimated Z ≈ 12–15).
 
 ### Workflow
