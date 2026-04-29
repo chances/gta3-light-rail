@@ -9,6 +9,15 @@
   - Example: Convert `**Route Planning:**` to `#### Route Planning`
   - Remove the colon when converting to heading syntax
 
+## Language
+- Use American English spellings in all code, comments, and documentation
+- Examples: color (not colour), meter (not metre), behavior (not behaviour), center (not centre)
+- Exception: spec-defined attribute names such as `aria-labelledby` are fixed and must not be changed
+
+## Collaborative Editing
+- When the user is actively editing a file, do NOT overwrite changes they made after the agent's last write.
+- Always re-read a file immediately before editing it to get the current state.
+
 ## Code Comments
 - Do NOT remove extant comments
 - Move and reword them only if absolutely necessary

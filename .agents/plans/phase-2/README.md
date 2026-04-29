@@ -2,7 +2,7 @@
 
 ## Carried over from Phase 1
 
-- [ ] **Visualize existing routes** in-game using:
+- [ ] **Visualize existing routes** in-game:
   1. Launch the game and take the Portland El from the northernmost station
      south to confirm the full loop is intact.
   2. Take the Shoreside subway to confirm its loop.
@@ -20,13 +20,17 @@ Already done via `scripts/backup-tracks.ts`. Backups are in
 
 - [x] `tracks.dat` backed up
 - [x] `tracks2.dat` backed up
-- [ ] `train.dat` / `train2.dat` camera files — deferred (see `installer.md`)
+- [ ] `train.dat` / `train2.dat` camera files
+  
+  Absent from the Steam install (the Rockstar Games Launcher version omits them).
+  They are optional; the game runs without them but cinematic mode will not activate.
+  Create from scratch if cinematic camera support is desired (see §2.3).
 
 ---
 
 ## 2.2 Author the Connector Track (`tracks3.dat`)
 
-Planned route is in `phase-1/routing.md`. Key decisions to resolve first:
+Planned route is in `.agents/plans/routing.md`. Key decisions to resolve first:
 
 - [ ] **Confirm engine supports a third track file.** Test by adding a minimal
   `tracks3.dat` (3–4 nodes) and checking whether the game loads it without
@@ -59,14 +63,24 @@ cross-island routes. Add it as `deno task generate-tracks`.
 
 ## 2.3 Cinematic Camera Data (`train.dat` / `train2.dat`)
 
-Deferred from Phase 1. Format is documented in `scripts/backup-tracks.ts`.
+These files live in `data/paths/` alongside the track files. They are **not
+present in the Steam (Rockstar Games Launcher) install** — the game silently
+skips cinematic mode when they are absent. Format is documented at
+[gtamods.com/wiki/Train.dat](https://gtamods.com/wiki/Train.dat) and in
+`scripts/backup-tracks.ts`.
 
-- [ ] Design camera nodes for the new connector route.
+- `train.dat` — cinematic cameras for the Portland El
+- `train2.dat` — cinematic cameras for the Shoreside subway
+
+To add cinematic support for the new connector:
+
+- [ ] Create `train.dat` and/or `train2.dat` from scratch (they do not exist
+  to append to).
 - [ ] Each node: cam position (X,Y,Z), target (X,Y,Z or 999,999,999),
   zone entry lower-left, zone entry upper-right, far clip, near clip.
-- [ ] Append new nodes to `train.dat` or create `train3.dat` (subject to
-  same engine support question as tracks).
-- [ ] Max 800 nodes total across the file.
+- [ ] Max 800 camera nodes total per file.
+- [ ] File format: comma-separated floats (newlines optional), terminated with
+  a semicolon. Every 14 values = one camera node.
 
 ---
 
