@@ -111,10 +111,29 @@
         cursor: pointer;
         font-size: 0.8rem;
       }
+      #toolbar button.active {
+        background: #e94560;
+        color: #fff;
+      }
       #toolbar button:hover, #toolbar button:focus-visible {
         background: #e94560;
         outline: 2px solid #e94560;
         outline-offset: 2px;
+      }
+
+      /* Segmented view-toggle group */
+      #view-toggle {
+        display: inline-flex;
+        border: 1px solid #0f3460;
+        border-radius: 0.25rem;
+        overflow: hidden;
+      }
+      #view-toggle button {
+        border-radius: 0;
+        border-right: 1px solid #0f3460;
+      }
+      #view-toggle button:last-child {
+        border-right: none;
       }
       #info-bar {
         margin-left: auto;
@@ -171,6 +190,20 @@
       .station-dot:focus-visible circle {
         stroke: #f5a623;
         stroke-width: 2.5;
+      }
+      /* Elevation-view axis lines and labels */
+      .elev-axis line {
+        stroke: #444;
+        stroke-width: 1;
+      }
+      .elev-axis text {
+        fill: #666;
+        font-size: 10px;
+      }
+      .elev-ground {
+        stroke: #333;
+        stroke-width: 1;
+        stroke-dasharray: 4 4;
       }
       /* Station labels (shown at zoom > 1.5) */
       .station-label {
@@ -297,6 +330,8 @@
               style="background: #4fc3f7"
             ></span>Subway
           </span>
+          <!-- Dynamic legend entries — one per additional loaded track file -->
+          <span id="legend-extra"></span>
           <span class="legend-item">
             <span
               style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #e94560; border: 1.5px solid #fff"
@@ -304,6 +339,15 @@
             Station
           </span>
         </div>
+        <span id="view-toggle" role="group" aria-label="View">
+          <button id="btn-view-plan" class="active" title="Top-down plan view">Plan</button>
+          <button id="btn-view-elev-e" title="Side profile looking north — horizontal axis: X (East), vertical axis: Z">
+            Elevation E/W
+          </button>
+          <button id="btn-view-elev-n" title="Side profile looking east — horizontal axis: Y (North), vertical axis: Z">
+            Elevation N/S
+          </button>
+        </span>
         <button id="btn-reset" title="Reset zoom and pan (R)">
           Reset view
         </button>
@@ -406,8 +450,70 @@
       /** @type {{ nodes: TrackNode[], stations: TrackNode[], label: string, color: string, closed: boolean }[]} */
       const tracks = [];
 
-      // Color palette for successive files loaded
-      const PALETTE = ["#f5a623", "#4fc3f7", "#a8e063", "#e94560", "#b39ddb"];
+      // Fixed colors for the two canonical track files
+      const COLOR_EL = "#f5a623"; // Portland El — orange
+      const COLOR_SUBWAY = "#4fc3f7"; // Subway — blue
+
+      /**
+       * Generates a random color that meets WCAG AA contrast (>=4.5:1) against
+       * the dark background (#1a1a2e, relative luminance ≈ 0.012).
+       *
+       * Strategy: pick a random hue, fix saturation at 80% and lightness at
+       * 62–72% — this range reliably clears the contrast threshold on dark
+       * backgrounds while staying visually distinct from the El (orange, ~38°)
+       * and Subway (light blue, ~198°) fixed colors.
+       */
+      /**
+       * Hue ranges mapped to plain English color names.
+       * Ordered so that the first matching entry wins.
+       * Covers the full 0–360° wheel; gaps (excluded arcs) will never be
+       * reached since randomAccessibleColor avoids them.
+       */
+      const HUE_NAMES = [
+        [0, 15, "Red"],
+        [15, 45, "Orange"], // excluded — too close to El
+        [45, 75, "Yellow"],
+        [75, 105, "Lime"],
+        [105, 150, "Green"],
+        [150, 170, "Teal"],
+        [170, 200, "Cyan"], // excluded — too close to Subway
+        [200, 255, "Cyan"], // (kept as fallback for fringe values)
+        [255, 285, "Violet"],
+        [285, 315, "Purple"],
+        [315, 345, "Pink"],
+        [345, 360, "Red"],
+      ];
+
+      /** Returns the plain English name for a hue (0–360). */
+      function hueName(h) {
+        for (const [lo, hi, name] of HUE_NAMES) {
+          if (h >= lo && h < hi) return name;
+        }
+        return "Red"; // 360° wraps back to red
+      }
+
+      /**
+       * Generates a random accessible HSL color and returns both the CSS string
+       * and a plain English color name derived from the hue.
+       * @returns {{ css: string, name: string }}
+       */
+      function randomAccessibleColor() {
+        // Avoid hues too close to El (~38°) or Subway (~198°) so new tracks
+        // stay visually distinct. Excluded arcs: [10°,70°] and [170°,230°].
+        const EXCLUDED = [[10, 70], [170, 230]];
+        let h;
+        do {
+          h = Math.random() * 360;
+        } while (EXCLUDED.some(([lo, hi]) => h >= lo && h <= hi));
+        // s=80%, l=67% gives comfortable contrast on #1a1a2e
+        return { css: `hsl(${h.toFixed(0)}, 80%, 67%)`, name: hueName(h) };
+      }
+
+      // Active view: "plan" | "elev-e" | "elev-n"
+      // plan   — top-down  (X → screen X,  Y → screen Y, flipped)
+      // elev-e — east elevation (X → screen X, Z → screen Y, flipped) — looking north
+      // elev-n — north elevation (Y → screen X, Z → screen Y, flipped) — looking east
+      let activeView = "plan";
 
       // GTA3 world → screen: Y axis is flipped (world +Y = north = screen up)
       // D3 scales map world coords to SVG pixels; we apply them inside the zoom group.
@@ -477,9 +583,41 @@
 
       document.getElementById("btn-reset").addEventListener("click", resetView);
 
+      // View-toggle buttons
+      const viewButtons = {
+        "plan": document.getElementById("btn-view-plan"),
+        "elev-e": document.getElementById("btn-view-elev-e"),
+        "elev-n": document.getElementById("btn-view-elev-n"),
+      };
+      Object.entries(viewButtons).forEach(([view, btn]) => {
+        btn.addEventListener("click", () => {
+          if (activeView === view) return;
+          activeView = view;
+          Object.values(viewButtons).forEach((b) => b.classList.remove("active"));
+          btn.classList.add("active");
+          // Update SVG accessible description
+          document.getElementById("svg-desc").textContent = svgDesc();
+          if (tracks.length > 0) {
+            rebuildScales();
+            render();
+            fitAll();
+          }
+        });
+      });
+
       function resetView() {
         svg.transition().duration(500).call(zoom.transform, d3.zoomIdentity);
         fitAll();
+      }
+
+      function svgDesc() {
+        if (activeView === "plan") {
+          return "Top-down plan view of the Liberty City rail network. X axis = East, Y axis = North.";
+        } else if (activeView === "elev-e") {
+          return "East elevation of the rail network. Horizontal axis = X (East), vertical axis = Z (elevation). Looking north.";
+        } else {
+          return "North elevation of the rail network. Horizontal axis = Y (North), vertical axis = Z (elevation). Looking east.";
+        }
       }
 
       // ---------------------------------------------------------------------------
@@ -542,16 +680,29 @@
           return;
         }
 
-        // Determine color: tracks.dat = El (orange), tracks2.dat = Subway (blue), others cycle
-        let color;
+        // Determine color and label:
+        //   tracks.dat  → El orange, "Portland El"
+        //   tracks2.dat → Subway blue, "Subway"
+        //   tracks3.dat and above, or any other filename → random accessible
+        //   color with a generated "LRT {Color} Line" label
+        let color, label;
         const lc = filename.toLowerCase();
         const isDefaultTrack = /^tracks2?\.dat$/i.test(filename);
-        if (lc.includes("tracks2")) color = PALETTE[1];
-        else if (lc.includes("tracks")) color = PALETTE[0];
-        else color = PALETTE[tracks.length % PALETTE.length];
-
-        // Label: prefer the filename stem
-        const label = filename.replace(/\.dat$/i, "");
+        if (/^tracks2\.dat$/i.test(filename)) {
+          color = COLOR_SUBWAY;
+          label = "Subway";
+        } else if (/^tracks\.dat$/i.test(filename)) {
+          color = COLOR_EL;
+          label = "Portland El";
+        } else {
+          const { css, name } = randomAccessibleColor();
+          color = css;
+          // Avoid duplicate color names if multiple extra files are loaded
+          const usedNames = new Set(tracks.map((t) => t.label));
+          let lineName = `LRT ${name} Line`;
+          if (usedNames.has(lineName)) lineName = `LRT ${name} Line (${filename.replace(/\.dat$/i, "")})`;
+          label = lineName;
+        }
 
         // Close the path for the game's default track files (tracks.dat / tracks2.dat),
         // even if the underlying data does not end at its start point.
@@ -581,49 +732,147 @@
         const allNodes = tracks.flatMap((t) => t.nodes);
         if (allNodes.length === 0) return;
 
-        const xs = allNodes.map((n) => n.x);
-        const ys = allNodes.map((n) => n.y);
-
-        const padding = 200; // meters of padding around the bounding box
-        const minX = Math.min(...xs) - padding;
-        const maxX = Math.max(...xs) + padding;
-        const minY = Math.min(...ys) - padding;
-        const maxY = Math.max(...ys) + padding;
-
         const W = svg.node().clientWidth || 800;
         const H = svg.node().clientHeight || 600;
 
-        // Uniform scale to preserve aspect ratio
-        const worldW = maxX - minX;
-        const worldH = maxY - minY;
-        const scale = Math.min(W / worldW, H / worldH);
+        // Elevation views use Z as the vertical axis.
+        // A small fixed padding (meters) is added around the bounding box.
+        const PAD_HORIZ = 200; // horizontal world padding
+        const PAD_VERT_ELEV = 5; // vertical (Z) padding for elevation views
 
-        // Center the world in the viewport
-        const offsetX = (W - worldW * scale) / 2;
-        const offsetY = (H - worldH * scale) / 2;
-
-        // X: world east → screen right
-        xScale = d3.scaleLinear().domain([minX, maxX]).range([
-          offsetX,
-          offsetX + worldW * scale,
-        ]);
-        // Y: world north (up) → screen up, so negate: higher world Y → lower screen Y
-        yScale = d3.scaleLinear().domain([maxY, minY]).range([
-          offsetY,
-          offsetY + worldH * scale,
-        ]);
+        if (activeView === "plan") {
+          const xs = allNodes.map((n) => n.x);
+          const ys = allNodes.map((n) => n.y);
+          const minX = Math.min(...xs) - PAD_HORIZ;
+          const maxX = Math.max(...xs) + PAD_HORIZ;
+          const minY = Math.min(...ys) - PAD_HORIZ;
+          const maxY = Math.max(...ys) + PAD_HORIZ;
+          const worldW = maxX - minX;
+          const worldH = maxY - minY;
+          const scale = Math.min(W / worldW, H / worldH);
+          const offsetX = (W - worldW * scale) / 2;
+          const offsetY = (H - worldH * scale) / 2;
+          // X: world east → screen right
+          xScale = d3.scaleLinear().domain([minX, maxX]).range([offsetX, offsetX + worldW * scale]);
+          // Y: world north (up) → screen up
+          yScale = d3.scaleLinear().domain([maxY, minY]).range([offsetY, offsetY + worldH * scale]);
+        } else if (activeView === "elev-e") {
+          // East elevation: horiz = X (east), vert = Z (elevation up)
+          const xs = allNodes.map((n) => n.x);
+          const zs = allNodes.map((n) => n.z);
+          const minX = Math.min(...xs) - PAD_HORIZ;
+          const maxX = Math.max(...xs) + PAD_HORIZ;
+          const minZ = Math.min(...zs) - PAD_VERT_ELEV;
+          const maxZ = Math.max(...zs) + PAD_VERT_ELEV;
+          const worldW = maxX - minX;
+          const worldH = maxZ - minZ;
+          const scale = Math.min(W / worldW, H / worldH);
+          const offsetX = (W - worldW * scale) / 2;
+          const offsetY = (H - worldH * scale) / 2;
+          xScale = d3.scaleLinear().domain([minX, maxX]).range([offsetX, offsetX + worldW * scale]);
+          // Z: higher elevation → screen up
+          yScale = d3.scaleLinear().domain([maxZ, minZ]).range([offsetY, offsetY + worldH * scale]);
+        } else {
+          // North elevation: horiz = Y (north), vert = Z (elevation up)
+          const ys = allNodes.map((n) => n.y);
+          const zs = allNodes.map((n) => n.z);
+          const minY = Math.min(...ys) - PAD_HORIZ;
+          const maxY = Math.max(...ys) + PAD_HORIZ;
+          const minZ = Math.min(...zs) - PAD_VERT_ELEV;
+          const maxZ = Math.max(...zs) + PAD_VERT_ELEV;
+          const worldW = maxY - minY;
+          const worldH = maxZ - minZ;
+          const scale = Math.min(W / worldW, H / worldH);
+          const offsetX = (W - worldW * scale) / 2;
+          const offsetY = (H - worldH * scale) / 2;
+          // Y: world north → screen right
+          xScale = d3.scaleLinear().domain([minY, maxY]).range([offsetX, offsetX + worldW * scale]);
+          // Z: higher elevation → screen up
+          yScale = d3.scaleLinear().domain([maxZ, minZ]).range([offsetY, offsetY + worldH * scale]);
+        }
       }
 
       // ---------------------------------------------------------------------------
       // Render
       // ---------------------------------------------------------------------------
 
+      /** Returns the screen X coord for a node given the current view. */
+      function screenX(n) {
+        if (activeView === "elev-n") return xScale(n.y);
+        return xScale(n.x); // plan and elev-e both use world X horizontally
+      }
+
+      /** Returns the screen Y coord for a node given the current view. */
+      function screenY(n) {
+        if (activeView === "plan") return yScale(n.y);
+        return yScale(n.z); // elevation views use Z vertically
+      }
+
+      /** Draws architectural elevation axis lines: Z ticks on the left, ground datum. */
+      function renderElevationAxes() {
+        const allNodes = tracks.flatMap((t) => t.nodes);
+        const zs = allNodes.map((n) => n.z);
+        const minZ = Math.min(...zs);
+        const maxZ = Math.max(...zs);
+
+        // Determine horizontal span in screen coords for axis lines
+        const allHoriz = activeView === "elev-n" ? allNodes.map((n) => xScale(n.y)) : allNodes.map((n) => xScale(n.x));
+        const x0 = Math.min(...allHoriz);
+        const x1 = Math.max(...allHoriz);
+
+        const axisG = g.append("g").attr("class", "elev-axis").attr("aria-hidden", "true");
+
+        // Z = 0 ground datum (dashed)
+        if (minZ < 0 || maxZ > 0) {
+          const y0 = yScale(0);
+          axisG.append("line")
+            .attr("class", "elev-ground")
+            .attr("x1", x0 - 20).attr("x2", x1 + 20)
+            .attr("y1", y0).attr("y2", y0);
+          axisG.append("text")
+            .attr("x", x0 - 22).attr("y", y0)
+            .attr("text-anchor", "end")
+            .attr("dominant-baseline", "middle")
+            .text("Z 0");
+        }
+
+        // Z tick lines — one per ~10 m
+        const tickStep = 10;
+        const tickMin = Math.floor(minZ / tickStep) * tickStep;
+        const tickMax = Math.ceil(maxZ / tickStep) * tickStep;
+        for (let z = tickMin; z <= tickMax; z += tickStep) {
+          const sy = yScale(z);
+          axisG.append("line")
+            .attr("x1", x0 - 6).attr("x2", x0)
+            .attr("y1", sy).attr("y2", sy);
+          axisG.append("text")
+            .attr("x", x0 - 8).attr("y", sy)
+            .attr("text-anchor", "end")
+            .attr("dominant-baseline", "middle")
+            .text(`Z ${z}`);
+        }
+
+        // Axis label
+        const labelX = activeView === "elev-e" ? "X (m, East →)" : "Y (m, North →)";
+        const midX = (x0 + x1) / 2;
+        const labelY = yScale(minZ) + 20;
+        axisG.append("text")
+          .attr("x", midX).attr("y", labelY)
+          .attr("text-anchor", "middle")
+          .attr("fill", "#555")
+          .attr("font-size", "11px")
+          .text(labelX);
+      }
+
       function render() {
         g.selectAll("*").remove();
 
+        // Draw elevation axes before track lines so they appear behind
+        if (activeView !== "plan") renderElevationAxes();
+
         const lineGen = d3.line()
-          .x((n) => xScale(n.x))
-          .y((n) => yScale(n.y));
+          .x((n) => screenX(n))
+          .y((n) => screenY(n));
 
         for (const track of tracks) {
           const trackG = g.append("g")
@@ -654,8 +903,8 @@
                 .attr("aria-label", (n) => stationAriaLabel(n));
 
               grp.append("circle")
-                .attr("cx", (n) => xScale(n.x))
-                .attr("cy", (n) => yScale(n.y))
+                .attr("cx", (n) => screenX(n))
+                .attr("cy", (n) => screenY(n))
                 .attr("r", 5)
                 .attr("fill", "#e94560")
                 .attr("stroke", "#fff")
@@ -664,8 +913,8 @@
               // Station name label (visible when zoomed in)
               grp.append("text")
                 .attr("class", "station-label")
-                .attr("x", (n) => xScale(n.x))
-                .attr("y", (n) => yScale(n.y) + 8)
+                .attr("x", (n) => screenX(n))
+                .attr("y", (n) => screenY(n) + 8)
                 .text((n) => n.stationName ?? exitLabel(n.stationType));
 
               return grp;
@@ -690,8 +939,8 @@
       function fitAll() {
         if (tracks.length === 0) return;
         const allNodes = tracks.flatMap((t) => t.nodes);
-        const xs = allNodes.map((n) => xScale(n.x));
-        const ys = allNodes.map((n) => yScale(n.y));
+        const xs = allNodes.map((n) => screenX(n));
+        const ys = allNodes.map((n) => screenY(n));
 
         const x0 = Math.min(...xs), x1 = Math.max(...xs);
         const y0 = Math.min(...ys), y1 = Math.max(...ys);
@@ -770,6 +1019,17 @@
         infoBar.textContent = `${tracks.length} file${
           tracks.length !== 1 ? "s" : ""
         } · ${totalNodes} nodes · ${totalStations} stations`;
+
+        // Rebuild dynamic legend entries for tracks that are not El or Subway
+        const legendExtra = document.getElementById("legend-extra");
+        legendExtra.innerHTML = "";
+        for (const track of tracks) {
+          if (track.color === COLOR_EL || track.color === COLOR_SUBWAY) continue;
+          const item = document.createElement("span");
+          item.className = "legend-item";
+          item.innerHTML = `<span class="legend-swatch" style="background:${track.color}"></span>${track.label}`;
+          legendExtra.appendChild(item);
+        }
       }
 
       function setStatus(msg) {
