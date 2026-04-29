@@ -11,17 +11,18 @@ https://www.grandtheftwiki.com/Subway_in_GTA_III.
 
 ## Available Tools
 
-| Tool                     | Purpose                     | Source       |
-| ------------------------ | --------------------------- | ------------ |
-| **X Train Track Editor** | Create/edit tracks.dat      | GTAMods Wiki |
-| **IMG Tool v2.0**        | Modify .img archives        | Community    |
-| **Blender**              | 3D modeling, with RW plugin | blender.org  |
-| **TXD Workshop**         | Create/edit textures        | GTAMods Wiki |
-| **G-TXD**                | Alternative texture editor  | Community    |
-| **MEd (GTA Map Editor)** | Add objects/stations to map | GTAMods Wiki |
-| **Moo Mapper**           | Advanced map editing        | GTAMods Wiki |
-| **GTA Stuff Toolkit**    | Validate DFF/TXD files      | gtastuff.com |
-| **Hex Editor**           | View/debug binary files     | ImHex        |
+| Tool                     | Purpose                                        | Source       |
+| ------------------------ | ---------------------------------------------- | ------------ |
+| **X Train Track Editor** | Create/edit tracks.dat                         | GTAMods Wiki |
+| **IMG Tool v2.0**        | Modify .img archives                           | Community    |
+| **Blender**              | 3D modeling, with RW plugin                    | blender.org  |
+| **TXD Workshop**         | Create/edit textures                           | GTAMods Wiki |
+| **G-TXD**                | Alternative texture editor                     | Community    |
+| **MEd (GTA Map Editor)** | Add objects/stations to map                    | GTAMods Wiki |
+| **KEd**                  | Specialist surveying and tracks.dat inspection | GTAMods Wiki |
+| **Moo Mapper**           | Advanced map editing                           | GTAMods Wiki |
+| **GTA Stuff Toolkit**    | Validate DFF/TXD files                         | gtastuff.com |
+| **Hex Editor**           | View/debug binary files                        | ImHex        |
 
 ### Required Tools
 
