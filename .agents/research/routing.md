@@ -52,8 +52,8 @@ International Airport** as an at-grade or elevated surface line (distinct from t
 ### Design Principles
 
 - Trains travel **counterclockwise** (mandatory — hardcoded engine behaviour)
-- Connector nodes are **appended to `tracks2.dat`** (see Phase 2 architecture decision) — do not modify originals
-  until Phase 2 prototyping is complete
+- Connector nodes are **appended to `tracks2.dat`** (see Phase 2 architecture decision) — do not modify originals until
+  Phase 2 prototyping is complete
 - Target **Z elevation**: match the Portland El (~21–22 units) at the elevated branch junction; use ~7–8 units for
   at-grade Portland and Staunton sections; ~6–7 units for Shoreside Vale highway
 - Node spacing: ~10–15 units (consistent with existing files)
@@ -62,12 +62,12 @@ International Airport** as an at-grade or elevated surface line (distinct from t
 
 > Additional intermediate stops can be added in a later phase once the base route is proven.
 
-| # | Name                       | Island         | Approx. Coords    | Notes                                                                      |
-| - | -------------------------- | -------------- | ----------------- | -------------------------------------------------------------------------- |
-| 1 | **Portland View Junction** | Portland       | `(850, -480, 22)` | El branch junction on the major road between Chinatown and Portland View   |
-| 2 | **Callahan**               | Portland       | `(760, -280, 8)`  | At-grade stop on the Callahan Bridge avenue, Portland side                 |
-| 3 | **Belleville Park**        | Staunton       | `(tbd, -280, 8)`  | West edge of Staunton Island; verify X in-game after crossing              |
-| 4 | **FIA Terminal**           | Shoreside Vale | `(tbd, -1400, 6)` | Pedestrian-accessible station outside the FIA main terminal                |
+| # | Name                       | Island         | Approx. Coords    | Notes                                                                    |
+| - | -------------------------- | -------------- | ----------------- | ------------------------------------------------------------------------ |
+| 1 | **Portland View Junction** | Portland       | `(850, -480, 22)` | El branch junction on the major road between Chinatown and Portland View |
+| 2 | **Callahan**               | Portland       | `(760, -280, 8)`  | At-grade stop on the Callahan Bridge avenue, Portland side               |
+| 3 | **Belleville Park**        | Staunton       | `(tbd, -280, 8)`  | West edge of Staunton Island; verify X in-game after crossing            |
+| 4 | **FIA Terminal**           | Shoreside Vale | `(tbd, -1400, 6)` | Pedestrian-accessible station outside the FIA main terminal              |
 
 ### Route Segments
 
@@ -93,10 +93,10 @@ International Airport** as an at-grade or elevated surface line (distinct from t
   ~(tbd, -1400, 6)          ← [FIA TERMINAL station]
 ```
 
-> **Note:** `tbd` X-coordinates for Staunton and Shoreside Vale segments must be confirmed in-game.
-> The Callahan Bridge avenue runs due east–west; walk the bridge on foot to read the deck Z value.
-> The Shoreside Lift Bridge crossing is modelled after the real-life **Steel Bridge** in Portland, Oregon,
-> where light rail (MAX) shares the lower deck of the lift span with road traffic.
+> **Note:** `tbd` X-coordinates for Staunton and Shoreside Vale segments must be confirmed in-game. The Callahan Bridge
+> avenue runs due east–west; walk the bridge on foot to read the deck Z value. The Shoreside Lift Bridge crossing is
+> modelled after the real-life **Steel Bridge** in Portland, Oregon, where light rail (MAX) shares the lower deck of the
+> lift span with road traffic.
 
 ### Elevation Profile
 
@@ -117,22 +117,22 @@ Z
 
 ## Open Questions (resolve in Phase 2)
 
-1. **Junction geometry**: The El loop is counterclockwise — the branch-off node needs to be on the correct side so
-   the train doesn't reverse. Inspect the node sequence near the major road between Chinatown and Portland View;
-   the branch departs southward and immediately begins the descent ramp to street grade.
+1. **Junction geometry**: The El loop is counterclockwise — the branch-off node needs to be on the correct side so the
+   train doesn't reverse. Inspect the node sequence near the major road between Chinatown and Portland View; the branch
+   departs southward and immediately begins the descent ramp to street grade.
 2. **Callahan Bridge deck height**: Estimated Z ≈ 12–15. Verify in-game by walking the bridge and reading the Z
    coordinate. The avenue approach on both sides must slope smoothly to meet the deck.
-3. **Staunton Island crossing**: Confirm that the east–west avenue across Staunton Island has a median wide enough
-   for at-grade track, or whether the alignment must run with traffic in the kerb lane instead.
+3. **Staunton Island crossing**: Confirm that the east–west avenue across Staunton Island has a median wide enough for
+   at-grade track, or whether the alignment must run with traffic in the kerb lane instead.
 4. ~~**Staunton west edge avenue**: Confirm the north–south avenue along the west edge of Staunton Island connects
    continuously from the Callahan Bridge avenue to the Shoreside Lift Bridge ramp, and note its X coordinate.~~
    **Resolved:** The east–west Callahan Bridge avenue intersects the north–south avenue at a T-junction; that
-   north–south avenue then runs continuously north to the Shoreside Lift Bridge loop. The alignment turns north
-   at that intersection rather than following a single continuous avenue from the bridge crossing.
-5. ~~**Shoreside Lift Bridge lower deck**: Confirm whether the bridge geometry allows a shared lower-deck crossing
-   (as on Portland's Steel Bridge). If not, the alignment may need an adjacent at-grade or elevated approach.~~
+   north–south avenue then runs continuously north to the Shoreside Lift Bridge loop. The alignment turns north at that
+   intersection rather than following a single continuous avenue from the bridge crossing.
+5. ~~**Shoreside Lift Bridge lower deck**: Confirm whether the bridge geometry allows a shared lower-deck crossing (as
+   on Portland's Steel Bridge). If not, the alignment may need an adjacent at-grade or elevated approach.~~
    **Resolved:** The lower deck geometry is compatible with a shared crossing.
-6. **Shoreside Vale highway curve**: Confirm where the highway turns north and where the FIA access road
-   intersection is; this determines the precise location of the turn-west waypoint and the future FIA station.
-7. **FIA terminal pedestrian access**: The future Phase 3 FIA station should terminate within walking distance of
-   the main terminal entrance. Survey the FIA apron perimeter in-game to identify a suitable spot.
+6. **Shoreside Vale highway curve**: Confirm where the highway turns north and where the FIA access road intersection
+   is; this determines the precise location of the turn-west waypoint and the future FIA station.
+7. **FIA terminal pedestrian access**: The future Phase 3 FIA station should terminate within walking distance of the
+   main terminal entrance. Survey the FIA apron perimeter in-game to identify a suitable spot.

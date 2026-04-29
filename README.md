@@ -32,7 +32,8 @@ and UI on the radar.
 
 ### 🚉 Station Stops
 
-Scripted door events and dwell timing at each station, driven entirely by the TypeScript plugin, i.e. no ASI memory patching.
+Scripted door events and dwell timing at each station, driven entirely by the TypeScript plugin, i.e. no ASI memory
+patching.
 
 ## Installation
 
