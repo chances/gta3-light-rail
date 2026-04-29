@@ -1,10 +1,10 @@
 # Train Collision Avoidance — Design Analysis
 
-Design analysis for the ASI plugin that manages the light rail fleet on `tracks3.dat`
-and prevents collisions on the segment shared with the Portland El (`tracks.dat`).
+Design analysis for the ASI plugin that manages the light rail fleet on `tracks3.dat` and prevents collisions on the
+segment shared with the Portland El (`tracks.dat`).
 
-The engine context is GTA III 1.0 US (re3-verified): trains are fixed-path autonomous
-objects with **no native collision detection or inter-train awareness**.
+The engine context is GTA III 1.0 US (re3-verified): trains are fixed-path autonomous objects with **no native collision
+detection or inter-train awareness**.
 
 ---
 
@@ -12,39 +12,34 @@ objects with **no native collision detection or inter-train awareness**.
 
 ### 1.1 How Real-World Block Signaling Works
 
-The classical **absolute block system** divides a line into fixed segments called
-*blocks*, bounded by signals or station limits. The fundamental rule is:
+The classical **absolute block system** divides a line into fixed segments called _blocks_, bounded by signals or
+station limits. The fundamental rule is:
 
 > Only one train is permitted inside a block at any time.
 
 Signals show one of three indications:
 
-| Aspect | Meaning |
-| --- | --- |
-| **Red / Danger** | Stop — the block ahead is occupied |
+| Aspect               | Meaning                                                            |
+| -------------------- | ------------------------------------------------------------------ |
+| **Red / Danger**     | Stop — the block ahead is occupied                                 |
 | **Yellow / Caution** | Proceed with reduced speed; prepare to stop before the next signal |
-| **Green / Clear** | Proceed at line speed |
+| **Green / Clear**    | Proceed at line speed                                              |
 
-A block transitions from Occupied → Clear only after the *rear* of the train has
-passed the exit signal **and** the signal has been reset by the signaler (or track
-circuit).
+A block transitions from Occupied → Clear only after the _rear_ of the train has passed the exit signal **and** the
+signal has been reset by the signaler (or track circuit).
 
-**Interlocking** is a higher-level layer that locks signals and switch positions into
-mutually consistent states so no two conflicting routes can be set simultaneously.
-In our context there are no powered switches (trains run fixed loops), so interlocking
-reduces to: *ensure only one block occupant at a time on any shared segment.*
+**Interlocking** is a higher-level layer that locks signals and switch positions into mutually consistent states so no
+two conflicting routes can be set simultaneously. In our context there are no powered switches (trains run fixed loops),
+so interlocking reduces to: _ensure only one block occupant at a time on any shared segment._
 
-**Moving block** (modern ETCS Level 3): trains report their position continuously;
-the "block" is a virtual envelope around each train, not a fixed geographic segment.
-This is conceptually closer to the world-space distance algorithm described in §2.2,
-but requires reliable position telemetry — which we have via `m_nCurTrackNode` +
-`m_fWagonPosition`.
+**Moving block** (modern ETCS Level 3): trains report their position continuously; the "block" is a virtual envelope
+around each train, not a fixed geographic segment. This is conceptually closer to the world-space distance algorithm
+described in §2.2, but requires reliable position telemetry — which we have via `m_nCurTrackNode` + `m_fWagonPosition`.
 
 ### 1.2 Minimum Viable Software Block System (Game Context)
 
-The simplest workable design for a single-threaded tick function is a **fixed-block
-absolute system with a look-ahead warning tier**, implemented as a flat occupancy
-array:
+The simplest workable design for a single-threaded tick function is a **fixed-block absolute system with a look-ahead
+warning tier**, implemented as a flat occupancy array:
 
 ```
 BlockSystem.Update() — called once per game tick, no threads, no sleeps
@@ -60,24 +55,21 @@ BlockSystem.Update() — called once per game tick, no threads, no sleeps
       write L.m_fSpeed back to CTrain* + 0x294
 ```
 
-Complexity: O(W + L × B) per tick where W = total wagon count, L = LR wagon count,
-B = number of blocks. At W = 17, L = 4, B = 24 this is negligible on any CPU that
-can run GTA III.
+Complexity: O(W + L × B) per tick where W = total wagon count, L = LR wagon count, B = number of blocks. At W = 17, L =
+4, B = 24 this is negligible on any CPU that can run GTA III.
 
 ### 1.3 Defining Blocks on a Node-Based Track
 
-A *block* in node-index space is a contiguous half-open range `[firstNode, lastNode]`
-on one track file. Boundaries must be placed at:
+A _block_ in node-index space is a contiguous half-open range `[firstNode, lastNode]` on one track file. Boundaries must
+be placed at:
 
-1. **Station platforms** — natural dwell / stop points; a train already stopped is a
-   safe block boundary.
+1. **Station platforms** — natural dwell / stop points; a train already stopped is a safe block boundary.
 2. **Junction entry/exit nodes** — any node where two track-file geometries coincide.
-3. **Midpoints between stations** for long inter-station gaps (> 25 nodes ≈ 300 m) to
-   allow a second train to queue without crowding the platform.
+3. **Midpoints between stations** for long inter-station gaps (> 25 nodes ≈ 300 m) to allow a second train to queue
+   without crowding the platform.
 
-At 12 m/node spacing, a comfortable block length is **12–20 nodes (144–240 m)**.
-Approach and platform blocks can be shorter (8–12 nodes) because trains slow down
-entering them anyway.
+At 12 m/node spacing, a comfortable block length is **12–20 nodes (144–240 m)**. Approach and platform blocks can be
+shorter (8–12 nodes) because trains slow down entering them anyway.
 
 ---
 
@@ -85,14 +77,13 @@ entering them anyway.
 
 ### 2.1 Junction Topology
 
-The Portland El (`tracks.dat`, 168 nodes) runs counterclockwise. Its northernmost
-node is **index 0** (or whichever index the file places nearest `(963.3, 13.1, 21.9)`;
-verify by walking the array — see routing.md, "Junction geometry" open question).
+The Portland El (`tracks.dat`, 168 nodes) runs counterclockwise. Its northernmost node is **index 0** (or whichever
+index the file places nearest `(963.3, 13.1, 21.9)`; verify by walking the array — see routing.md, "Junction geometry"
+open question).
 
-The light rail (`tracks3.dat`) branches off at or near this node. Because GTA III
-track files are separate node arrays, geometrically coincident nodes are **logically
-independent** — each file has its own index space, and `CTrain::ProcessControl()`
-advances each wagon along its own array without any awareness of the other.
+The light rail (`tracks3.dat`) branches off at or near this node. Because GTA III track files are separate node arrays,
+geometrically coincident nodes are **logically independent** — each file has its own index space, and
+`CTrain::ProcessControl()` advances each wagon along its own array without any awareness of the other.
 
 This creates a dual-referencing problem:
 
@@ -101,20 +92,17 @@ tracks.dat index 0  →  world (963.3, 13.1, 21.9)  ← same point in space
 tracks3.dat index 0 →  world (963.3, 13.1, 21.9)  ←
 ```
 
-An El wagon at `tracks.dat[2]` and an LR wagon at `tracks3.dat[2]` may be at
-**identical world coordinates**; the engine places both there simultaneously and
-renders them overlapping — a visible collision.
+An El wagon at `tracks.dat[2]` and an LR wagon at `tracks3.dat[2]` may be at **identical world coordinates**; the engine
+places both there simultaneously and renders them overlapping — a visible collision.
 
-The shared segment extends from the branch-off node until the two lines geometrically
-diverge. Based on the route plan, this is approximately **nodes 0–12 on the El** and
-**nodes 0–8 on the light rail** (both files start at the junction before diverging).
-Verify exact node counts by comparing world coordinates during Phase 2.
+The shared segment extends from the branch-off node until the two lines geometrically diverge. Based on the route plan,
+this is approximately **nodes 0–12 on the El** and **nodes 0–8 on the light rail** (both files start at the junction
+before diverging). Verify exact node counts by comparing world coordinates during Phase 2.
 
 ### 2.2 World-Space Proximity Algorithm
 
-For segments where node indices cannot be directly compared (because the two files
-have different sampling densities near the junction), use world-space proximity as a
-fallback:
+For segments where node indices cannot be directly compared (because the two files have different sampling densities
+near the junction), use world-space proximity as a fallback:
 
 ```
 SharedSegmentProximityCheck() — per tick
@@ -149,9 +137,8 @@ Per tick:
 
 This runs in O(E × L) = O(5 × 4) = 20 comparisons per tick — negligible.
 
-**Early-exit optimization**: wrap the shared segment in an axis-aligned bounding box.
-Skip the pair loop entirely if neither wagon's `worldPos` falls inside the AABB. The
-AABB for the junction near `(963, 13, 22)` is roughly:
+**Early-exit optimization**: wrap the shared segment in an axis-aligned bounding box. Skip the pair loop entirely if
+neither wagon's `worldPos` falls inside the AABB. The AABB for the junction near `(963, 13, 22)` is roughly:
 
 ```
 minX = 740,  maxX = 980
@@ -161,8 +148,8 @@ minZ =  18,  maxZ =  26
 
 ### 2.3 Block-Based Algorithm (Preferred for All Other Segments)
 
-World-space proximity is expensive to reason about. For the majority of the route, a
-block occupancy table gives the same safety guarantee with O(1) lookup:
+World-space proximity is expensive to reason about. For the majority of the route, a block occupancy table gives the
+same safety guarantee with O(1) lookup:
 
 ```
 SharedBlockCheck() — per tick (runs after occupancy is stamped for all wagons)
@@ -184,8 +171,8 @@ for each LR wagon L:
   L.targetSpeed = speedForDistance(nodesAhead)
 ```
 
-The `sharedPeerBlock` field in the `BlockDescriptor` struct (see §3.2) encodes the
-cross-track mapping once, at compile time. No world-space math is needed at runtime.
+The `sharedPeerBlock` field in the `BlockDescriptor` struct (see §3.2) encodes the cross-track mapping once, at compile
+time. No world-space math is needed at runtime.
 
 ---
 
@@ -195,45 +182,45 @@ cross-track mapping once, at compile time. No world-space math is needed at runt
 
 Node indices are approximate pending Phase 2 verification of the exact junction node.
 
-| Block name | Node range | Shared? | Notes |
-| --- | --- | --- | --- |
-| `EL_SHARED_JUNCTION` | 0–14 | ✅ peer: `LR_SHARED_JUNCTION` | Branch-off geometry near `(963, 13, 22)` |
-| `EL_BAILLIE_APPROACH` | 15–32 | — | Northbound approach to Baillie station |
-| `EL_BAILLIE_PLATFORM` | 33–42 | — | Baillie station dwell zone |
-| `EL_EASTBAY_RUN` | 43–82 | — | Eastbound run; uncritical, no sharing |
-| `EL_SUMMIT_CLIMB` | 83–105 | — | Elevated section over Saint Mark's (~Z 42) |
-| `EL_KUROWSKI_APPROACH` | 106–125 | — | Southbound approach to Kurowski station |
-| `EL_KUROWSKI_PLATFORM` | 126–136 | — | Kurowski station dwell zone (Chinatown) |
-| `EL_SOUTH_LOOP` | 137–167 | — | Return loop back north |
+| Block name             | Node range | Shared?                       | Notes                                      |
+| ---------------------- | ---------- | ----------------------------- | ------------------------------------------ |
+| `EL_SHARED_JUNCTION`   | 0–14       | ✅ peer: `LR_SHARED_JUNCTION` | Branch-off geometry near `(963, 13, 22)`   |
+| `EL_BAILLIE_APPROACH`  | 15–32      | —                             | Northbound approach to Baillie station     |
+| `EL_BAILLIE_PLATFORM`  | 33–42      | —                             | Baillie station dwell zone                 |
+| `EL_EASTBAY_RUN`       | 43–82      | —                             | Eastbound run; uncritical, no sharing      |
+| `EL_SUMMIT_CLIMB`      | 83–105     | —                             | Elevated section over Saint Mark's (~Z 42) |
+| `EL_KUROWSKI_APPROACH` | 106–125    | —                             | Southbound approach to Kurowski station    |
+| `EL_KUROWSKI_PLATFORM` | 126–136    | —                             | Kurowski station dwell zone (Chinatown)    |
+| `EL_SOUTH_LOOP`        | 137–167    | —                             | Return loop back north                     |
 
 ### 3.2 Block Partitioning — Light Rail (`tracks3.dat`, ~208 nodes at 12 m/node)
 
-| Block name | Node range | Shared? | Notes |
-| --- | --- | --- | --- |
-| `LR_SHARED_JUNCTION` | 0–10 | ✅ peer: `EL_SHARED_JUNCTION` | El geometry overlap — highest priority block |
-| `LR_PORTLAND_VIEW_APP` | 11–27 | — | Approach to Portland View / Sweeney station |
-| `LR_PORTLAND_VIEW_PLT` | 28–37 | — | Portland View station dwell |
-| `LR_CALLAHAN_DESCENT` | 38–72 | — | Descent from Z 22 → Z 15 toward Callahan Bridge |
-| `LR_CALLAHAN_JCT_APP` | 73–88 | — | Bridge deck approach |
-| `LR_CALLAHAN_JCT_PLT` | 89–98 | — | Callahan Junction station dwell |
-| `LR_STAUNTON_SURFACE` | 99–130 | — | Surface run across Staunton Island |
-| `LR_NEWPORT_APP` | 131–142 | — | Approach to Newport station |
-| `LR_NEWPORT_PLT` | 143–152 | — | Newport station dwell |
-| `LR_SHORESIDE_BRIDGE` | 153–168 | — | Shoreside Lift Bridge crossing |
-| `LR_SHORESIDE_RUN` | 169–188 | — | Pike Creek / Wichita Gardens surface |
-| `LR_SHORESIDE_TERM_APP` | 189–198 | — | Approach to Shoreside Terminal |
-| `LR_SHORESIDE_TERM_PLT` | 199–208 | — | Shoreside Terminal station dwell |
-| `LR_FIA_APPROACH` | 209–218 | — | FIA access road descent |
-| `LR_FIA_PLT` | 219–224 | — | FIA terminus station dwell (end of line) |
+| Block name              | Node range | Shared?                       | Notes                                           |
+| ----------------------- | ---------- | ----------------------------- | ----------------------------------------------- |
+| `LR_SHARED_JUNCTION`    | 0–10       | ✅ peer: `EL_SHARED_JUNCTION` | El geometry overlap — highest priority block    |
+| `LR_PORTLAND_VIEW_APP`  | 11–27      | —                             | Approach to Portland View / Sweeney station     |
+| `LR_PORTLAND_VIEW_PLT`  | 28–37      | —                             | Portland View station dwell                     |
+| `LR_CALLAHAN_DESCENT`   | 38–72      | —                             | Descent from Z 22 → Z 15 toward Callahan Bridge |
+| `LR_CALLAHAN_JCT_APP`   | 73–88      | —                             | Bridge deck approach                            |
+| `LR_CALLAHAN_JCT_PLT`   | 89–98      | —                             | Callahan Junction station dwell                 |
+| `LR_STAUNTON_SURFACE`   | 99–130     | —                             | Surface run across Staunton Island              |
+| `LR_NEWPORT_APP`        | 131–142    | —                             | Approach to Newport station                     |
+| `LR_NEWPORT_PLT`        | 143–152    | —                             | Newport station dwell                           |
+| `LR_SHORESIDE_BRIDGE`   | 153–168    | —                             | Shoreside Lift Bridge crossing                  |
+| `LR_SHORESIDE_RUN`      | 169–188    | —                             | Pike Creek / Wichita Gardens surface            |
+| `LR_SHORESIDE_TERM_APP` | 189–198    | —                             | Approach to Shoreside Terminal                  |
+| `LR_SHORESIDE_TERM_PLT` | 199–208    | —                             | Shoreside Terminal station dwell                |
+| `LR_FIA_APPROACH`       | 209–218    | —                             | FIA access road descent                         |
+| `LR_FIA_PLT`            | 219–224    | —                             | FIA terminus station dwell (end of line)        |
 
-> ℹ️ **Note**: The route as currently specified in `generate-tracks.ts` is one-way
-> (terminus to terminus, ~208 nodes). If the track is a full loop (return journey
-> appended), add a symmetric block set for the return leg, numbered `LR_*_RET`.
+> ℹ️ **Note**: The route as currently specified in `generate-tracks.ts` is one-way (terminus to terminus, ~208 nodes).
+> If the track is a full loop (return journey appended), add a symmetric block set for the return leg, numbered
+> `LR_*_RET`.
 
 ### 3.3 D Data Structures
 
-The ASI plugin is written in D (compiled to a Win32 DLL via LDC2). The block system
-is entirely `@nogc nothrow` so it runs safely inside the game's render thread.
+The ASI plugin is written in D (compiled to a Win32 DLL via LDC2). The block system is entirely `@nogc nothrow` so it
+runs safely inside the game's render thread.
 
 ```gta3-light-rail/plugins/light-rail/block_signaling.d#L1-200
 // block_signaling.d
@@ -389,11 +376,9 @@ ushort nodesUntilOccupiedBlock(TrackId track, ushort startNode,
 
 ### 3.4 Efficient Mapping: Why a Flat Array?
 
-The flat `nodeBlockMap[3][600]` array occupies **3 × 600 = 1,800 bytes** — trivially
-small. A lookup is two memory reads (array index arithmetic with no branching), making
-it faster than any search-based alternative (binary search over BLOCK_TABLE, hash
-map, etc.). Since `initBlockLookup()` runs once at startup the setup cost is
-irrelevant.
+The flat `nodeBlockMap[3][600]` array occupies **3 × 600 = 1,800 bytes** — trivially small. A lookup is two memory reads
+(array index arithmetic with no branching), making it faster than any search-based alternative (binary search over
+BLOCK_TABLE, hash map, etc.). Since `initBlockLookup()` runs once at startup the setup cost is irrelevant.
 
 ---
 
@@ -403,35 +388,31 @@ irrelevant.
 
 Key constraints derived from `CTrain::ProcessControl()` (re3 source):
 
-- Each tick: `m_fWagonPosition += m_fSpeed * dt` where `dt` is frame time (≈ 0.033 s
-  at 30 FPS).
+- Each tick: `m_fWagonPosition += m_fSpeed * dt` where `dt` is frame time (≈ 0.033 s at 30 FPS).
 - When `m_fWagonPosition >= 1.0`: `m_nCurTrackNode++`, `m_fWagonPosition -= 1.0`.
-- `m_fSpeed < 0` causes backward node traversal — undefined behavior (the engine
-  only pre-computes forward arc positions). **Never write a negative speed.**
-- A sudden jump of `|Δm_fSpeed|` > ~0.05/frame can cause `m_fWagonPosition` to
-  overshoot multiple nodes in one tick, teleporting the train. This is visually
-  jarring but does not crash the engine. It does, however, cause the block occupancy
-  to skip intermediate blocks — potentially skipping a red signal.
+- `m_fSpeed < 0` causes backward node traversal — undefined behavior (the engine only pre-computes forward arc
+  positions). **Never write a negative speed.**
+- A sudden jump of `|Δm_fSpeed|` > ~0.05/frame can cause `m_fWagonPosition` to overshoot multiple nodes in one tick,
+  teleporting the train. This is visually jarring but does not crash the engine. It does, however, cause the block
+  occupancy to skip intermediate blocks — potentially skipping a red signal.
 
-**Safe speed delta limit: 0.03 units/frame** (empirical; derived from: at 30 FPS and
-the 12 m node spacing, a delta of 0.03/frame means speed changes by 0.9 m/s per
-second, well within passenger-comfort norms and below the skip threshold).
+**Safe speed delta limit: 0.03 units/frame** (empirical; derived from: at 30 FPS and the 12 m node spacing, a delta of
+0.03/frame means speed changes by 0.9 m/s per second, well within passenger-comfort norms and below the skip threshold).
 
 ### 4.2 Approach Zones
 
 Define four zones based on `nodesUntilOccupiedBlock` returned value:
 
-| Zone | Nodes ahead | Target speed | Description |
-| --- | --- | --- | --- |
-| `CLEAR` | ≥ 13 | `0.40` | Line speed — full normal operation |
-| `WARN` | 9–12 | `0.22` | Half-speed warning — occupied block visible ahead |
-| `CAUTION` | 5–8 | `0.08` | Crawl — prepare to stop |
-| `STOP_ZONE` | 1–4 | `0.02` | Creep — ready to halt in < 1 node |
-| `HOLD` | 0 | `0.00` | Block entry denied; train is stationary |
+| Zone        | Nodes ahead | Target speed | Description                                       |
+| ----------- | ----------- | ------------ | ------------------------------------------------- |
+| `CLEAR`     | ≥ 13        | `0.40`       | Line speed — full normal operation                |
+| `WARN`      | 9–12        | `0.22`       | Half-speed warning — occupied block visible ahead |
+| `CAUTION`   | 5–8         | `0.08`       | Crawl — prepare to stop                           |
+| `STOP_ZONE` | 1–4         | `0.02`       | Creep — ready to halt in < 1 node                 |
+| `HOLD`      | 0           | `0.00`       | Block entry denied; train is stationary           |
 
-The `STOP_ZONE → HOLD` transition takes at most 1 frame to complete because by the
-time the wagon is in STOP_ZONE the delta from `0.02 → 0.00` is within
-MAX_DELTA_PER_FRAME.
+The `STOP_ZONE → HOLD` transition takes at most 1 frame to complete because by the time the wagon is in STOP_ZONE the
+delta from `0.02 → 0.00` is within MAX_DELTA_PER_FRAME.
 
 ### 4.3 D Implementation
 
@@ -481,16 +462,14 @@ At SPEED_NORMAL = 0.40 and MAX_DELTA_PER_FRAME = 0.03, a full stop takes:
 frames_to_stop = 0.40 / 0.03 ≈ 14 frames  (~0.46 s at 30 FPS)
 ```
 
-During those 14 frames the wagon advances `0.40 + 0.37 + 0.34 + ... ≈ 2.9` node
-widths — **under 3 nodes**. The WARN zone starts at 13 nodes out, giving >4× the
-required stopping margin. The design is conservative.
+During those 14 frames the wagon advances `0.40 + 0.37 + 0.34 + ... ≈ 2.9` node widths — **under 3 nodes**. The WARN
+zone starts at 13 nodes out, giving >4× the required stopping margin. The design is conservative.
 
 ### 4.5 El Train Priority
 
-El wagons (`m_nTrackId == 0`) are managed by the vanilla engine and are **not** speed-
-regulated by the ASI. Touching their `m_fSpeed` would desynchronize them from the
-stock game's internal position tracking. The priority rule is enforced exclusively by
-halting the LR wagons — El wagons are never slowed.
+El wagons (`m_nTrackId == 0`) are managed by the vanilla engine and are **not** speed- regulated by the ASI. Touching
+their `m_fSpeed` would desynchronize them from the stock game's internal position tracking. The priority rule is
+enforced exclusively by halting the LR wagons — El wagons are never slowed.
 
 ---
 
@@ -498,12 +477,11 @@ halting the LR wagons — El wagons are never slowed.
 
 ### 5.1 Physical Train Dimensions
 
-A GTA III train wagon is approximately **14–16 game units (meters)** long based on
-the DFF model bounding box. At 12 m/node spacing, one wagon footprint spans roughly
-**1.3 nodes** on the array.
+A GTA III train wagon is approximately **14–16 game units (meters)** long based on the DFF model bounding box. At 12
+m/node spacing, one wagon footprint spans roughly **1.3 nodes** on the array.
 
-Minimum safe node separation to avoid visual overlap between the tail of the leading
-wagon and the nose of the following wagon:
+Minimum safe node separation to avoid visual overlap between the tail of the leading wagon and the nose of the following
+wagon:
 
 ```
 visual_gap = ceil(wagons_in_group × 1.3) + 1 buffer
@@ -522,49 +500,46 @@ safe_headway_nodes = 3 (visual) + 3 (braking) + 2 (margin)
 
 ### 5.2 Loop Geometry and Train Count
 
-The route from `generate-tracks.ts` is a one-way open line (Portland View → FIA) with
-~208 nodes at 12 m/node. Whether it is a full loop or a terminus-and-return depends
-on Phase 2 geometry. These estimates assume a **closed loop** with a return leg of
-equal length, giving:
+The route from `generate-tracks.ts` is a one-way open line (Portland View → FIA) with ~208 nodes at 12 m/node. Whether
+it is a full loop or a terminus-and-return depends on Phase 2 geometry. These estimates assume a **closed loop** with a
+return leg of equal length, giving:
 
-| Parameter | Value |
-| --- | --- |
-| One-way node count | ~208 nodes |
-| Full loop node count (round trip) | ~416 nodes |
-| Full loop distance | ~4,992 m |
-| Average speed | 0.40 units/frame × 30 FPS = 12 m/s |
-| Station dwell time | ~5 s × 5 stations = 25 s (one direction) |
-| One-way travel time | (208 nodes × 12 m) / 12 m/s + 25 s = 233 s |
-| Full loop time | ~466 s ≈ **7.8 minutes** |
+| Parameter                         | Value                                      |
+| --------------------------------- | ------------------------------------------ |
+| One-way node count                | ~208 nodes                                 |
+| Full loop node count (round trip) | ~416 nodes                                 |
+| Full loop distance                | ~4,992 m                                   |
+| Average speed                     | 0.40 units/frame × 30 FPS = 12 m/s         |
+| Station dwell time                | ~5 s × 5 stations = 25 s (one direction)   |
+| One-way travel time               | (208 nodes × 12 m) / 12 m/s + 25 s = 233 s |
+| Full loop time                    | ~466 s ≈ **7.8 minutes**                   |
 
 Headway for N trains on the loop:
 
-| Trains | Headway | Node separation | Wait time at any station |
-| --- | --- | --- | --- |
-| 2 | 233 s | 208 nodes | ≤ 3.9 min |
-| 3 | 155 s | 139 nodes | ≤ 2.6 min |
-| **4** | **117 s** | **104 nodes** | **≤ 1.9 min** |
-| 5 | 93 s | 83 nodes | ≤ 1.6 min |
+| Trains | Headway   | Node separation | Wait time at any station |
+| ------ | --------- | --------------- | ------------------------ |
+| 2      | 233 s     | 208 nodes       | ≤ 3.9 min                |
+| 3      | 155 s     | 139 nodes       | ≤ 2.6 min                |
+| **4**  | **117 s** | **104 nodes**   | **≤ 1.9 min**            |
+| 5      | 93 s      | 83 nodes        | ≤ 1.6 min                |
 
-**Recommendation: 4 light rail wagons.** This delivers a sub-2-minute headway, keeps
-separation at 104 nodes (13× the 8-node minimum), and adds only 4 vehicles to the
-pool (see §6).
+**Recommendation: 4 light rail wagons.** This delivers a sub-2-minute headway, keeps separation at 104 nodes (13× the
+8-node minimum), and adds only 4 vehicles to the pool (see §6).
 
-If the line is one-way terminus-to-terminus (no return loop) rather than a closed
-loop, fewer trains are needed because each train simply dwells at the terminus before
-running back — reducing the loop time by eliminating dead-running. In that case 3
-trains with timed reversals still provides acceptable headway.
+If the line is one-way terminus-to-terminus (no return loop) rather than a closed loop, fewer trains are needed because
+each train simply dwells at the terminus before running back — reducing the loop time by eliminating dead-running. In
+that case 3 trains with timed reversals still provides acceptable headway.
 
 ### 5.3 Staggered Initial Placement
 
 Set `m_nCurTrackNode` for each new wagon during the `OnInitTrains` hook:
 
-| Wagon | Initial `m_nCurTrackNode` | Approx. world location |
-| --- | --- | --- |
-| LR-0 | 0 | Shared junction / Portland View approach |
-| LR-1 | 104 | Callahan descent |
-| LR-2 | 208 | Newport / Shoreside Bridge |
-| LR-3 | 312 | Shoreside Terminal approach |
+| Wagon | Initial `m_nCurTrackNode` | Approx. world location                   |
+| ----- | ------------------------- | ---------------------------------------- |
+| LR-0  | 0                         | Shared junction / Portland View approach |
+| LR-1  | 104                       | Callahan descent                         |
+| LR-2  | 208                       | Newport / Shoreside Bridge               |
+| LR-3  | 312                       | Shoreside Terminal approach              |
 
 Each wagon is placed in a distinct block, so no block conflict occurs at startup.
 
@@ -574,23 +549,22 @@ Each wagon is placed in a distinct block, so no block conflict occurs at startup
 
 ### 6.1 `CTrain` Struct Layout (re3 / GTA III 1.0 US)
 
-Relevant fields (offsets relative to `CTrain*`). Verify against your target executable
-before hardcoding; the re3 reimplementation is the authoritative source.
+Relevant fields (offsets relative to `CTrain*`). Verify against your target executable before hardcoding; the re3
+reimplementation is the authoritative source.
 
-| Offset | Type | Field | Notes |
-| --- | --- | --- | --- |
-| `+0x28C` | `uint16` | `m_nCurTrackNode` | Current node index |
-| `+0x290` | `float` | `m_fSpeed` | Units/frame — directly writable |
-| `+0x294` | `float` | `m_fWagonPosition` | Progress [0.0, 1.0] to next node |
-| `+0x298` | `uint8` | `m_nTrackId` | 0 = El, 1 = Subway, **2 = LightRail** |
-| `+0x299` | `uint8` | `m_nNumPassengers` | Read-only for our purposes |
-| `+0x29C` | `CTrain*` | `m_pNextWagon` | Linked list — next wagon in group |
-| `+0x2A0` | `uint8` | `m_nWagonGroupId` | Wagons with same ID form a train |
+| Offset   | Type      | Field              | Notes                                 |
+| -------- | --------- | ------------------ | ------------------------------------- |
+| `+0x28C` | `uint16`  | `m_nCurTrackNode`  | Current node index                    |
+| `+0x290` | `float`   | `m_fSpeed`         | Units/frame — directly writable       |
+| `+0x294` | `float`   | `m_fWagonPosition` | Progress [0.0, 1.0] to next node      |
+| `+0x298` | `uint8`   | `m_nTrackId`       | 0 = El, 1 = Subway, **2 = LightRail** |
+| `+0x299` | `uint8`   | `m_nNumPassengers` | Read-only for our purposes            |
+| `+0x29C` | `CTrain*` | `m_pNextWagon`     | Linked list — next wagon in group     |
+| `+0x2A0` | `uint8`   | `m_nWagonGroupId`  | Wagons with same ID form a train      |
 
-> ⚠️ **Offset uncertainty**: The re3 source uses struct members, not raw offsets. The
-> specific byte offsets differ between the 1.0 US, 1.0 EU, and Steam (v1.1) builds due
-> to alignment differences. Use the re3 `CTrain` struct definition and a symbolic
-> offset calculation rather than hardcoded hex addresses where possible.
+> ⚠️ **Offset uncertainty**: The re3 source uses struct members, not raw offsets. The specific byte offsets differ
+> between the 1.0 US, 1.0 EU, and Steam (v1.1) builds due to alignment differences. Use the re3 `CTrain` struct
+> definition and a symbolic offset calculation rather than hardcoded hex addresses where possible.
 
 ### 6.2 D Struct Overlay
 
@@ -624,60 +598,54 @@ static assert(CTrainFields.m_nTrackId.offsetof       == 0x298);
 static assert(CTrainFields.m_nWagonGroupId.offsetof  == 0x2A0);
 ```
 
-If the static asserts fail during compilation, the offsets for this exe version differ
-from the re3 reference. Correct them by diffing the re3 `CTrain` struct definition
-against the disassembly of the target exe's `CTrain::ProcessControl`.
+If the static asserts fail during compilation, the offsets for this exe version differ from the re3 reference. Correct
+them by diffing the re3 `CTrain` struct definition against the disassembly of the target exe's `CTrain::ProcessControl`.
 
 ### 6.3 Wagon ID and Group ID Assignment
 
-El and Subway group IDs are **independent namespaces** — the engine selects the track
-namespace first via `m_nTrackId`, then disambiguates within it via `m_nWagonGroupId`.
-El groups 0–1 and Subway groups 0–3 do not collide.
+El and Subway group IDs are **independent namespaces** — the engine selects the track namespace first via `m_nTrackId`,
+then disambiguates within it via `m_nWagonGroupId`. El groups 0–1 and Subway groups 0–3 do not collide.
 
 **Proposed light rail wagon assignments:**
 
-| Wagon | `m_nTrackId` | `m_nWagonGroupId` | Role |
-| --- | --- | --- | --- |
-| LR-0 | 2 | 0 | Train A — car 1 (lead) |
-| LR-1 | 2 | 0 | Train A — car 2 (trailing) |
-| LR-2 | 2 | 1 | Train B — car 1 (lead) |
-| LR-3 | 2 | 1 | Train B — car 2 (trailing) |
+| Wagon | `m_nTrackId` | `m_nWagonGroupId` | Role                       |
+| ----- | ------------ | ----------------- | -------------------------- |
+| LR-0  | 2            | 0                 | Train A — car 1 (lead)     |
+| LR-1  | 2            | 0                 | Train A — car 2 (trailing) |
+| LR-2  | 2            | 1                 | Train B — car 1 (lead)     |
+| LR-3  | 2            | 1                 | Train B — car 2 (trailing) |
 
-Each train group is two wagons linked via `m_pNextWagon`. The lead wagon's
-`m_pNextWagon` points to the trailing wagon; the trailing wagon's `m_pNextWagon` is
-null. Both wagons in a group share the same `m_nWagonGroupId` and `m_nTrackId`.
+Each train group is two wagons linked via `m_pNextWagon`. The lead wagon's `m_pNextWagon` points to the trailing wagon;
+the trailing wagon's `m_pNextWagon` is null. Both wagons in a group share the same `m_nWagonGroupId` and `m_nTrackId`.
 
 If single-wagon operation is simpler to implement initially (no linked-list management):
 
 | Wagon | `m_nTrackId` | `m_nWagonGroupId` |
-| --- | --- | --- |
-| LR-0 | 2 | 0 |
-| LR-1 | 2 | 1 |
-| LR-2 | 2 | 2 |
-| LR-3 | 2 | 3 |
+| ----- | ------------ | ----------------- |
+| LR-0  | 2            | 0                 |
+| LR-1  | 2            | 1                 |
+| LR-2  | 2            | 2                 |
+| LR-3  | 2            | 3                 |
 
 ### 6.4 Vehicle Pool Budget
 
 `CPools::ms_pVehiclePool` cap: **110 entries** (hard limit in 1.0 US exe).
 
-| Category | Count |
-| --- | --- |
-| Permanent El wagons (vanilla) | 5 |
-| Permanent Subway wagons (vanilla) | 8 |
-| New LR wagons (ASI-allocated) | 4 |
-| Other permanent vehicles (coaches, etc.) | ~3 |
-| **Total permanent** | **~20** |
-| **Remaining for dynamic traffic** | **~90** |
+| Category                                 | Count   |
+| ---------------------------------------- | ------- |
+| Permanent El wagons (vanilla)            | 5       |
+| Permanent Subway wagons (vanilla)        | 8       |
+| New LR wagons (ASI-allocated)            | 4       |
+| Other permanent vehicles (coaches, etc.) | ~3      |
+| **Total permanent**                      | **~20** |
+| **Remaining for dynamic traffic**        | **~90** |
 
-GTA III's traffic system typically spawns 30–50 vehicles in a live session. A headroom
-of 90 is very comfortable — the LR wagons leave the same budget as the vanilla game
-does.
+GTA III's traffic system typically spawns 30–50 vehicles in a live session. A headroom of 90 is very comfortable — the
+LR wagons leave the same budget as the vanilla game does.
 
-**Failure mode**: `CTrain::InitTrains()` (or our hook equivalent) calls
-`CPools::ms_pVehiclePool->New()` to allocate each wagon. If the pool is full, `New()`
-returns `nullptr` and the wagon is silently skipped. Because our ASI hook runs during
-the init phase (before any traffic spawns), pool exhaustion at startup is not a
-practical concern.
+**Failure mode**: `CTrain::InitTrains()` (or our hook equivalent) calls `CPools::ms_pVehiclePool->New()` to allocate
+each wagon. If the pool is full, `New()` returns `nullptr` and the wagon is silently skipped. Because our ASI hook runs
+during the init phase (before any traffic spawns), pool exhaustion at startup is not a practical concern.
 
 **After loading**, always validate pointers:
 
@@ -742,15 +710,15 @@ OnProcessControl  (MinHook on CTrain::ProcessControl, called each frame per wago
 
 ## Summary of Concrete Design Decisions
 
-| Topic | Decision |
-| --- | --- |
-| **Signaling model** | Absolute block, 3-aspect look-ahead (CLEAR/WARN/CAUTION/STOP/HOLD) |
-| **Block granularity** | 8–25 nodes/block (96–300 m) at 12 m/node spacing |
+| Topic                        | Decision                                                                                                      |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| **Signaling model**          | Absolute block, 3-aspect look-ahead (CLEAR/WARN/CAUTION/STOP/HOLD)                                            |
+| **Block granularity**        | 8–25 nodes/block (96–300 m) at 12 m/node spacing                                                              |
 | **Shared segment detection** | Block table with `isShared` / `sharedPeerBlock` fields + world-space proximity fallback for the junction AABB |
-| **El train priority** | Unconditional — LR wagons always yield, El wagons are never speed-modified |
-| **Speed regulation** | Smooth ramp via `smoothSpeed()`, MAX_DELTA = 0.03/frame; hard floor at 0.0; never negative |
-| **Minimum safe headway** | 8 nodes (96 m); running headway with 4 wagons ≈ 104 nodes (1,248 m) |
-| **Wagon count** | **4 light rail wagons** — delivers ~2-minute headway on the ~7.8-minute loop |
-| **Wagon group IDs** | `m_nTrackId = 2`, `m_nWagonGroupId = 0–1` (two 2-car trains) or `0–3` (four singles) |
-| **Pool safety** | 4 new wagons → ~20 permanent total, leaving ~90 slots for traffic — safe margin |
-| **Pointer validation** | `isWagonValid()` check before every memory access post-init |
+| **El train priority**        | Unconditional — LR wagons always yield, El wagons are never speed-modified                                    |
+| **Speed regulation**         | Smooth ramp via `smoothSpeed()`, MAX_DELTA = 0.03/frame; hard floor at 0.0; never negative                    |
+| **Minimum safe headway**     | 8 nodes (96 m); running headway with 4 wagons ≈ 104 nodes (1,248 m)                                           |
+| **Wagon count**              | **4 light rail wagons** — delivers ~2-minute headway on the ~7.8-minute loop                                  |
+| **Wagon group IDs**          | `m_nTrackId = 2`, `m_nWagonGroupId = 0–1` (two 2-car trains) or `0–3` (four singles)                          |
+| **Pool safety**              | 4 new wagons → ~20 permanent total, leaving ~90 slots for traffic — safe margin                               |
+| **Pointer validation**       | `isWagonValid()` check before every memory access post-init                                                   |

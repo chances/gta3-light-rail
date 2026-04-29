@@ -1,7 +1,7 @@
 # D Language ASI Plugin for GTA III — Research Report
 
-> **Target:** Win32 (x86, 32-bit) ASI plugin (renamed `.dll`) loaded by Ultimate ASI Loader via
-> `LoadLibrary`. No exports required — only a functioning `DllMain` on `DLL_PROCESS_ATTACH`.
+> **Target:** Win32 (x86, 32-bit) ASI plugin (renamed `.dll`) loaded by Ultimate ASI Loader via `LoadLibrary`. No
+> exports required — only a functioning `DllMain` on `DLL_PROCESS_ATTACH`.
 
 ---
 
@@ -9,11 +9,11 @@
 
 ### The Three Compilers
 
-| Compiler | Win32 Status | Recommended? |
-|---|---|---|
-| **DMD** | Native Win32 support, ships OPTLINK | Usable; OPTLINK is archaic |
-| **LDC** | First-class Win32/MSVC since 2016 | **Yes — strongly preferred** |
-| **GDC** | Linux-only official; unofficial Win builds exist | **No** — avoid for Windows targets |
+| Compiler | Win32 Status                                     | Recommended?                       |
+| -------- | ------------------------------------------------ | ---------------------------------- |
+| **DMD**  | Native Win32 support, ships OPTLINK              | Usable; OPTLINK is archaic         |
+| **LDC**  | First-class Win32/MSVC since 2016                | **Yes — strongly preferred**       |
+| **GDC**  | Linux-only official; unofficial Win builds exist | **No** — avoid for Windows targets |
 
 ---
 
@@ -29,29 +29,28 @@ rem COFF mode — uses MSVC link.exe or lld-link, produces COFF objects
 dmd -m32mscoff -shared -ofmyplugin.dll myplugin.d
 ```
 
-**`-m32` (default 32-bit)** uses the old **OPTLINK** linker with **OMF** (Intel Object Module Format)
-object files. This is a legacy format dating to the DOS era. OPTLINK is bundled inside the DMD
-installer as `optlink.exe` (historically named `link.exe` — renamed in DMD 2.088 to avoid
-confusion with MSVC). Key characteristics of OPTLINK:
+**`-m32` (default 32-bit)** uses the old **OPTLINK** linker with **OMF** (Intel Object Module Format) object files. This
+is a legacy format dating to the DOS era. OPTLINK is bundled inside the DMD installer as `optlink.exe` (historically
+named `link.exe` — renamed in DMD 2.088 to avoid confusion with MSVC). Key characteristics of OPTLINK:
 
-- Cannot link `.lib` files in COFF format (e.g., anything compiled by MSVC, MinGW, or clang).
-  You must convert with `coff2omf` or `coffimplib`.
+- Cannot link `.lib` files in COFF format (e.g., anything compiled by MSVC, MinGW, or clang). You must convert with
+  `coff2omf` or `coffimplib`.
 - Does not produce PDB debug info — only CodeView `.cv` in the `.dll` itself.
 - Buggy with some edge cases (large `.bss` segments, certain `__declspec` equivalents).
 
-**`-m32mscoff`** drops OPTLINK entirely, emits COFF objects, and delegates to MSVC `link.exe`
-or LLD. This is strictly better for interoperating with external C libraries. However it requires
-a Visual Studio or Build Tools installation, or at least the Windows SDK.
+**`-m32mscoff`** drops OPTLINK entirely, emits COFF objects, and delegates to MSVC `link.exe` or LLD. This is strictly
+better for interoperating with external C libraries. However it requires a Visual Studio or Build Tools installation, or
+at least the Windows SDK.
 
-**Conclusion:** DMD `-m32mscoff` is workable. Plain DMD `-m32` / OPTLINK is a landmine for
-anything that links a third-party C library (such as MinHook).
+**Conclusion:** DMD `-m32mscoff` is workable. Plain DMD `-m32` / OPTLINK is a landmine for anything that links a
+third-party C library (such as MinHook).
 
 ---
 
 ### LDC (LLVM-based D compiler)
 
-LDC is the right tool for a game plugin. It has been the primary recommendation from D core devs
-for performance-sensitive or Windows-native work since ~2016.
+LDC is the right tool for a game plugin. It has been the primary recommendation from D core devs for
+performance-sensitive or Windows-native work since ~2016.
 
 ```/dev/null/build.cmd#L1-8
 rem 32-bit Windows DLL — preferred invocation
@@ -64,22 +63,20 @@ rem With optimisations (important for performance in a game loop)
 ldc2 -m32 -shared -betterC -O2 -release -ofmyplugin.dll myplugin.d
 ```
 
-When LDC finds a Visual C++ toolchain (VS 2015+ or Build Tools), it automatically uses
-**MSVC `link.exe`** or its bundled **LLD** as the linker, producing proper COFF/PE output.
-If no VS install is found, it falls back to its bundled **LLD-link** with MinGW-w64 import
-libraries (requires `vcruntime140.dll` at runtime).
+When LDC finds a Visual C++ toolchain (VS 2015+ or Build Tools), it automatically uses **MSVC `link.exe`** or its
+bundled **LLD** as the linker, producing proper COFF/PE output. If no VS install is found, it falls back to its bundled
+**LLD-link** with MinGW-w64 import libraries (requires `vcruntime140.dll` at runtime).
 
-For `-m32`, LDC targets `i686-pc-windows-msvc` or `i686-w64-windows-gnu` depending on
-configuration. The MSVC triple is strongly preferred for a game plugin because it matches the
-GTA III process's C runtime.
+For `-m32`, LDC targets `i686-pc-windows-msvc` or `i686-w64-windows-gnu` depending on configuration. The MSVC triple is
+strongly preferred for a game plugin because it matches the GTA III process's C runtime.
 
 **Linker summary for LDC on Win32:**
 
-| Scenario | Linker |
-|---|---|
-| VS/Build Tools installed | `link.exe` (MSVC) |
-| No VS, LDC standalone | Bundled `lld-link` |
-| Explicitly set via env var `LINKER` | Whatever you set |
+| Scenario                            | Linker             |
+| ----------------------------------- | ------------------ |
+| VS/Build Tools installed            | `link.exe` (MSVC)  |
+| No VS, LDC standalone               | Bundled `lld-link` |
+| Explicitly set via env var `LINKER` | Whatever you set   |
 
 ---
 
@@ -97,47 +94,47 @@ GDC is part of GCC and is excellent on Linux, but:
 
 ## 2. D BetterC Mode (`-betterC`)
 
-BetterC removes the dependency on **druntime** (the D runtime library), keeping only the C
-runtime (`msvcrt.dll` / `ucrtbase.dll`). It is the correct choice for a game plugin DLL.
+BetterC removes the dependency on **druntime** (the D runtime library), keeping only the C runtime (`msvcrt.dll` /
+`ucrtbase.dll`). It is the correct choice for a game plugin DLL.
 
 ### What `-betterC` Eliminates
 
-| Feature | Removed? | Notes |
-|---|---|---|
-| Garbage Collector | ✅ Yes | No `new` on classes, no GC heap |
-| `TypeInfo` / `ModuleInfo` | ✅ Yes | No runtime reflection |
-| D `class` (reference types) | ✅ Yes | `struct` still works fully |
-| Built-in `core.thread` | ✅ Yes | OS threads still usable via WinAPI |
-| `Throwable` / exception runtime | ✅ Yes | C SEH still exists in the process |
-| `unittest` blocks | ✅ Disabled | (Can re-enable with `-unittest`) |
-| `assert` → druntime handler | ✅ Yes | Redirected to C `assert()` / abort |
-| Module constructors (`static this`) | ✅ Yes | Runs only with druntime init |
-| `std.*` (Phobos) | ✅ Most of it | `core.stdc.*` is still usable |
+| Feature                             | Removed?      | Notes                              |
+| ----------------------------------- | ------------- | ---------------------------------- |
+| Garbage Collector                   | ✅ Yes        | No `new` on classes, no GC heap    |
+| `TypeInfo` / `ModuleInfo`           | ✅ Yes        | No runtime reflection              |
+| D `class` (reference types)         | ✅ Yes        | `struct` still works fully         |
+| Built-in `core.thread`              | ✅ Yes        | OS threads still usable via WinAPI |
+| `Throwable` / exception runtime     | ✅ Yes        | C SEH still exists in the process  |
+| `unittest` blocks                   | ✅ Disabled   | (Can re-enable with `-unittest`)   |
+| `assert` → druntime handler         | ✅ Yes        | Redirected to C `assert()` / abort |
+| Module constructors (`static this`) | ✅ Yes        | Runs only with druntime init       |
+| `std.*` (Phobos)                    | ✅ Most of it | `core.stdc.*` is still usable      |
 
 ### What Remains Available
 
-| Feature | Available in BetterC |
-|---|---|
-| Structs with constructors/destructors | ✅ |
-| Templates, mixins, `static if` | ✅ (all compile-time) |
-| `scope(exit)` / RAII | ✅ |
-| Inline assembler (`asm { }`) | ✅ |
-| `extern(C)`, `extern(Windows)`, `extern(C++)` | ✅ |
-| Function pointers, delegates (limited) | ✅ |
-| `@nogc`, `nothrow`, `@safe` / `@trusted` | ✅ |
-| `core.stdc.*` (printf, malloc, memcpy, …) | ✅ |
-| `core.sys.windows.*` (WINAPI types/functions) | ✅ |
-| Static arrays and slices of static arrays | ✅ |
-| String literals (as `const char*` / slices) | ✅ |
-| Enum, union, bit fields | ✅ |
-| `pragma(mangle, "…")` | ✅ |
+| Feature                                       | Available in BetterC  |
+| --------------------------------------------- | --------------------- |
+| Structs with constructors/destructors         | ✅                    |
+| Templates, mixins, `static if`                | ✅ (all compile-time) |
+| `scope(exit)` / RAII                          | ✅                    |
+| Inline assembler (`asm { }`)                  | ✅                    |
+| `extern(C)`, `extern(Windows)`, `extern(C++)` | ✅                    |
+| Function pointers, delegates (limited)        | ✅                    |
+| `@nogc`, `nothrow`, `@safe` / `@trusted`      | ✅                    |
+| `core.stdc.*` (printf, malloc, memcpy, …)     | ✅                    |
+| `core.sys.windows.*` (WINAPI types/functions) | ✅                    |
+| Static arrays and slices of static arrays     | ✅                    |
+| String literals (as `const char*` / slices)   | ✅                    |
+| Enum, union, bit fields                       | ✅                    |
+| `pragma(mangle, "…")`                         | ✅                    |
 
 ### `DllMain` in BetterC
 
-The critical question: **Yes, `DllMain` works in BetterC**, but you must write it yourself
-rather than using the `SimpleDllMain` mixin. That mixin calls `dll_process_attach` /
-`dll_thread_attach` from druntime, which is unavailable. In BetterC you bypass all of that
-and handle the entry point manually — which is exactly what you want for a game plugin anyway:
+The critical question: **Yes, `DllMain` works in BetterC**, but you must write it yourself rather than using the
+`SimpleDllMain` mixin. That mixin calls `dll_process_attach` / `dll_thread_attach` from druntime, which is unavailable.
+In BetterC you bypass all of that and handle the entry point manually — which is exactly what you want for a game plugin
+anyway:
 
 ```/dev/null/dllmain_betterC.d#L1-22
 module dllmain;
@@ -169,14 +166,13 @@ BOOL DllMain(HINSTANCE hInstance, DWORD reason, LPVOID reserved) nothrow @nogc
 
 **Caveats for BetterC DLLs:**
 
-1. **No `static this()` module constructors.** Any init code must be called explicitly from
-   `DllMain`. This is actually safer in a DLL anyway (avoids DllMain lock issues).
-2. **No D `class`.** Use `struct` everywhere. COM-style vtable classes via `interface` +
-   `extern(C++)` still work.
+1. **No `static this()` module constructors.** Any init code must be called explicitly from `DllMain`. This is actually
+   safer in a DLL anyway (avoids DllMain lock issues).
+2. **No D `class`.** Use `struct` everywhere. COM-style vtable classes via `interface` + `extern(C++)` still work.
 3. **No exceptions.** Use `nothrow` everywhere. Any Phobos function that throws is off-limits.
-4. **`__gshared` is your friend.** Without druntime, TLS (thread-local storage via `__thread` /
-   `static`) still technically compiles but the initialization may be unreliable. Use
-   `__gshared` for plugin globals and manage thread safety manually.
+4. **`__gshared` is your friend.** Without druntime, TLS (thread-local storage via `__thread` / `static`) still
+   technically compiles but the initialization may be unreliable. Use `__gshared` for plugin globals and manage thread
+   safety manually.
 5. **D's associative arrays (`int[string]`) require the GC.** Use a C hash map or just arrays.
 
 ---
@@ -186,8 +182,7 @@ BOOL DllMain(HINSTANCE hInstance, DWORD reason, LPVOID reserved) nothrow @nogc
 GTA III (Win32, original exe) uses a mix of:
 
 - **`__cdecl`** — all standalone C-style functions, the default for MSVC without `/Gz`.
-- **`__thiscall`** — all non-`static` C++ member functions. `this` is passed in `ECX`;
-  callee cleans the stack.
+- **`__thiscall`** — all non-`static` C++ member functions. `this` is passed in `ECX`; callee cleans the stack.
 - **`__stdcall`** — Windows API callbacks, some game callbacks.
 - **`__fastcall`** — rare in GTA III (primarily MSVC-internal helpers).
 
@@ -208,8 +203,8 @@ CWorld_Add(someEntity);
 
 ### `extern(Windows)` — stdcall
 
-`extern(Windows)` is D's name for `__stdcall`. Callee cleans the stack; name-mangled with
-leading `_` and trailing `@N` (byte count). Use this for WinAPI callbacks:
+`extern(Windows)` is D's name for `__stdcall`. Callee cleans the stack; name-mangled with leading `_` and trailing `@N`
+(byte count). Use this for WinAPI callbacks:
 
 ```/dev/null/calling_conventions.d#L15-20
 // stdcall example
@@ -219,13 +214,13 @@ extern (Windows) alias WndProc_t =
 
 ### `extern(C++)` — thiscall (the tricky one)
 
-D has **no native `__thiscall` calling convention keyword**. This is a well-known limitation
-discussed extensively in the D forums (2006, 2011, 2016 threads). The conventional workarounds:
+D has **no native `__thiscall` calling convention keyword**. This is a well-known limitation discussed extensively in
+the D forums (2006, 2011, 2016 threads). The conventional workarounds:
 
 #### Option A — `extern(C++)` struct method (works on MSVC targets, LDC recommended)
 
-When targeting MSVC ABI (`i686-pc-windows-msvc`), D's `extern(C++)` for a `struct` method
-generates `__thiscall` code on x86 — because that is the MSVC C++ ABI for member functions:
+When targeting MSVC ABI (`i686-pc-windows-msvc`), D's `extern(C++)` for a `struct` method generates `__thiscall` code on
+x86 — because that is the MSVC C++ ABI for member functions:
 
 ```/dev/null/thiscall.d#L1-38
 // Define a D struct that mirrors the C++ object layout
@@ -250,15 +245,14 @@ CPed* GetPlayerPed()
 }
 ```
 
-> **⚠ Warning:** This approach only reliably generates `__thiscall` with LDC targeting
-> `i686-pc-windows-msvc`. With DMD `-m32` (OMF/OPTLINK), `extern(C++)` methods are
-> still pushed on the stack with `this` first — the ABI may differ from MSVC. Always verify
-> with a disassembler (x64dbg) on first use.
+> **⚠ Warning:** This approach only reliably generates `__thiscall` with LDC targeting `i686-pc-windows-msvc`. With DMD
+> `-m32` (OMF/OPTLINK), `extern(C++)` methods are still pushed on the stack with `this` first — the ABI may differ from
+> MSVC. Always verify with a disassembler (x64dbg) on first use.
 
 #### Option B — Inline Assembly Thiscall Shim (portable, guaranteed correct)
 
-The safest approach for arbitrary thiscall targets is a hand-written asm shim. This works
-identically regardless of which D compiler you use:
+The safest approach for arbitrary thiscall targets is a hand-written asm shim. This works identically regardless of
+which D compiler you use:
 
 ```/dev/null/thiscall_asm.d#L1-50
 module thiscall_asm;
@@ -306,16 +300,16 @@ float Entity_GetDistanceTo(void* self, float x, float y, float z) nothrow @nogc 
 }
 ```
 
-> **LDC note:** LDC's inline assembler uses DMD-compatible AT&T-ish syntax inside `asm { }` 
-> blocks (Intel syntax with DMD register names). LDC also supports **GCC extended inline asm**
-> via `__asm` for more power, but the standard `asm { }` block works fine here.
+> **LDC note:** LDC's inline assembler uses DMD-compatible AT&T-ish syntax inside `asm { }` blocks (Intel syntax with
+> DMD register names). LDC also supports **GCC extended inline asm** via `__asm` for more power, but the standard
+> `asm { }` block works fine here.
 
 ---
 
 ## 4. Linking Against MinHook from D
 
-MinHook is a BSD-licensed C library (`MinHook.h` + a static `.lib` / `.a`). Binding to it
-from D is straightforward: declare each C function with `extern(C)`.
+MinHook is a BSD-licensed C library (`MinHook.h` + a static `.lib` / `.a`). Binding to it from D is straightforward:
+declare each C function with `extern(C)`.
 
 ### Step 1 — Build MinHook for COFF/MSVC x86
 
@@ -478,21 +472,21 @@ ldc2 -m32 -shared -betterC ^
 
 ### D-Native Libraries
 
-There is **no widely-used, maintained D-native hooking library** equivalent to MinHook or
-safetyhook that targets Win32 x86. The Nim language has a MinHook wrapper (`khchen/minhook`),
-but nothing equivalent exists for D as a packaged library on `code.dlang.org` as of 2024.
+There is **no widely-used, maintained D-native hooking library** equivalent to MinHook or safetyhook that targets Win32
+x86. The Nim language has a MinHook wrapper (`khchen/minhook`), but nothing equivalent exists for D as a packaged
+library on `code.dlang.org` as of 2024.
 
 Your best options are:
 
 1. **MinHook via C binding** (recommended — as above).
-2. **safetyhook** — a modern C++ hooking library. Bindable from D via `extern(C++)`, but
-   requires MSVC ABI compatibility and is more complex to bind.
+2. **safetyhook** — a modern C++ hooking library. Bindable from D via `extern(C++)`, but requires MSVC ABI compatibility
+   and is more complex to bind.
 3. **Manual inline-assembly trampoline** (see below) — zero dependencies.
 
 ### Manual Trampoline Hook in D Inline Assembly
 
-For a lightweight, dependency-free hook, you can write the 5-byte JMP patch and trampoline
-yourself. This is the classic approach used by cleo/plugin-sdk tools:
+For a lightweight, dependency-free hook, you can write the 5-byte JMP patch and trampoline yourself. This is the classic
+approach used by cleo/plugin-sdk tools:
 
 ```/dev/null/manual_hook.d#L1-115
 /**
@@ -606,11 +600,10 @@ void installHooks() nothrow @nogc
 }
 ```
 
-> **⚠ Instruction length decoding:** The 5-byte patch assumes the first 5 bytes at the target
-> address contain only complete instructions. If a single instruction straddles byte 5, you
-> must copy more bytes. MinHook handles this automatically with a length-disassembler. For the
-> manual approach, use a disassembler like `hde32` (a single-file C header) bound via
-> `extern(C)` to get the instruction length.
+> **⚠ Instruction length decoding:** The 5-byte patch assumes the first 5 bytes at the target address contain only
+> complete instructions. If a single instruction straddles byte 5, you must copy more bytes. MinHook handles this
+> automatically with a length-disassembler. For the manual approach, use a disassembler like `hde32` (a single-file C
+> header) bound via `extern(C)` to get the instruction length.
 
 ---
 
@@ -726,63 +719,57 @@ This is the #1 friction point for Win32 D development:
 - DMD `-m32` produces **OMF** objects → OPTLINK linker → can only link **OMF `.lib`** files.
 - DMD `-m32mscoff` and **all LDC** produce **COFF** objects → MSVC `link.exe` or LLD.
 - Every MSVC-compiled library (MinHook, DirectX SDK, Windows SDK) is in **COFF** format.
-- **Solution:** Always use LDC `-m32` or DMD `-m32mscoff`. Never use plain DMD `-m32` with
-  external C libraries unless you can convert them (`coffimplib`, `coff2omf`).
+- **Solution:** Always use LDC `-m32` or DMD `-m32mscoff`. Never use plain DMD `-m32` with external C libraries unless
+  you can convert them (`coffimplib`, `coff2omf`).
 
 ### 7.2 The 80-bit `real` Type
 
-D's `real` type on x86 is **80-bit extended precision** (x87 `long double`). MSVC does not
-support 80-bit floats — it treats `long double` as 64-bit. If you interact with any MSVC-ABI
-C++ that uses `float` or `double`, use D's `float` (32-bit) and `double` (64-bit) only. Never
-pass `real` to extern functions.
+D's `real` type on x86 is **80-bit extended precision** (x87 `long double`). MSVC does not support 80-bit floats — it
+treats `long double` as 64-bit. If you interact with any MSVC-ABI C++ that uses `float` or `double`, use D's `float`
+(32-bit) and `double` (64-bit) only. Never pass `real` to extern functions.
 
 ### 7.3 Stack Alignment
 
-x86 Win32 calling conventions assume **4-byte stack alignment**. However, LLVM/LDC may emit
-SSE instructions that require **16-byte alignment**. Inside GTA III's process, the stack may
-not be 16-byte aligned when your detour is called (the game was compiled with MSVC at 4-byte
-alignment). 
+x86 Win32 calling conventions assume **4-byte stack alignment**. However, LLVM/LDC may emit SSE instructions that
+require **16-byte alignment**. Inside GTA III's process, the stack may not be 16-byte aligned when your detour is called
+(the game was compiled with MSVC at 4-byte alignment).
 
-**Mitigation:** In LDC, use `-mattr=-sse2` or ensure your detour function entry prologues
-align the stack. In practice, most scalar operations are unaffected; the problem arises with
-auto-vectorized loops. Use `pragma(inline, false)` on entry points and test.
+**Mitigation:** In LDC, use `-mattr=-sse2` or ensure your detour function entry prologues align the stack. In practice,
+most scalar operations are unaffected; the problem arises with auto-vectorized loops. Use `pragma(inline, false)` on
+entry points and test.
 
 ### 7.4 TLS (Thread-Local Storage) Bugs on Windows < 8.1
 
-LDC's bug tracker records a **TLS alignment bug on Windows versions before 8.1** when using
-`-m32`. Since GTA III's era is Windows XP/2000/7, and TLS for loaded DLLs (not the main
-executable) has historically been buggy, this matters:
+LDC's bug tracker records a **TLS alignment bug on Windows versions before 8.1** when using `-m32`. Since GTA III's era
+is Windows XP/2000/7, and TLS for loaded DLLs (not the main executable) has historically been buggy, this matters:
 
 - **Avoid `static` / TLS variables entirely** in a betterC DLL. Use `__gshared` globals.
-- If you need per-thread data, allocate it manually via `TlsAlloc` / `TlsSetValue` /
-  `TlsGetValue` (WinAPI).
+- If you need per-thread data, allocate it manually via `TlsAlloc` / `TlsSetValue` / `TlsGetValue` (WinAPI).
 
 ### 7.5 C Runtime Initialization
 
-GTA III ships with its own MSVC CRT (likely `msvcrt.dll` from MSVC 6.0 era). Your DLL will
-load its own copy of the CRT (or share it if using the DLL CRT). This means:
+GTA III ships with its own MSVC CRT (likely `msvcrt.dll` from MSVC 6.0 era). Your DLL will load its own copy of the CRT
+(or share it if using the DLL CRT). This means:
 
-- **Do not cross DLL boundaries with CRT objects** (e.g., `malloc` in your DLL vs `free` in
-  the game). Each has its own heap.
-- In betterC mode, you call `core.stdc.stdlib.malloc` which resolves to the C runtime linked
-  into your DLL — not the game's heap. This is correct and safe.
-- **Never throw a D exception** (not an issue in betterC — but worth noting if you later
-  drop `-betterC`).
+- **Do not cross DLL boundaries with CRT objects** (e.g., `malloc` in your DLL vs `free` in the game). Each has its own
+  heap.
+- In betterC mode, you call `core.stdc.stdlib.malloc` which resolves to the C runtime linked into your DLL — not the
+  game's heap. This is correct and safe.
+- **Never throw a D exception** (not an issue in betterC — but worth noting if you later drop `-betterC`).
 
 ### 7.6 The DllMain Loader Lock
 
-Like any DLL, you must not call `LoadLibrary`, `CreateThread`, or any Phobos/druntime
-blocking function inside `DllMain`. Standard Windows rule. This applies equally to D.
+Like any DLL, you must not call `LoadLibrary`, `CreateThread`, or any Phobos/druntime blocking function inside
+`DllMain`. Standard Windows rule. This applies equally to D.
 
-**Safe pattern:** In `DllMain(DLL_PROCESS_ATTACH)`, spawn initialization work via
-`CreateThread` or post to a queue that runs later. MinHook's `MH_CreateHook` is safe to
-call from `DllMain` because it only manipulates memory.
+**Safe pattern:** In `DllMain(DLL_PROCESS_ATTACH)`, spawn initialization work via `CreateThread` or post to a queue that
+runs later. MinHook's `MH_CreateHook` is safe to call from `DllMain` because it only manipulates memory.
 
 ### 7.7 ASLR and Hardcoded Addresses
 
-GTA III's original 1.0 EXE does not have ASLR enabled (it predates ASLR). Your hardcoded
-function addresses (e.g., `0x004087E0`) are the virtual addresses from IDA/Ghidra with the
-default image base (`0x00400000`). They are valid without rebasing. Verify with:
+GTA III's original 1.0 EXE does not have ASLR enabled (it predates ASLR). Your hardcoded function addresses (e.g.,
+`0x004087E0`) are the virtual addresses from IDA/Ghidra with the default image base (`0x00400000`). They are valid
+without rebasing. Verify with:
 
 ```/dev/null/verify_base.d#L1-12
 import core.sys.windows.windows : GetModuleHandleA;
@@ -800,22 +787,21 @@ void verifyBase() nothrow @nogc
 
 D's `asm { }` blocks use **Intel syntax** on both DMD and LDC (not AT&T). However:
 
-- **DMD inline asm** is processed by DMD's own assembler. It is fairly limited; it does not
-  support all SSE/AVX instructions.
-- **LDC inline asm** uses LLVM's integrated assembler behind the scenes, called via the same
-  DMD-compatible `asm { }` syntax. It supports the full x86 instruction set.
-- LDC also supports **GCC extended inline asm** (`__asm("...", ...)`) as an extension, giving
-  you full control over input/output constraints.
+- **DMD inline asm** is processed by DMD's own assembler. It is fairly limited; it does not support all SSE/AVX
+  instructions.
+- **LDC inline asm** uses LLVM's integrated assembler behind the scenes, called via the same DMD-compatible `asm { }`
+  syntax. It supports the full x86 instruction set.
+- LDC also supports **GCC extended inline asm** (`__asm("...", ...)`) as an extension, giving you full control over
+  input/output constraints.
 
-For the trampoline and thiscall shims in this project, the basic `asm { }` syntax is
-sufficient and works on both compilers.
+For the trampoline and thiscall shims in this project, the basic `asm { }` syntax is sufficient and works on both
+compilers.
 
 ### 7.9 `nothrow @nogc` Hygiene
 
-In betterC mode, every function reachable from `DllMain` should be marked `nothrow @nogc`.
-The compiler enforces this transitively in `@safe` code. In `@trusted` or `@system` code,
-you must enforce it manually. A stray `@gc` allocation (e.g., a D string concatenation with
-`~`) will compile but crash at runtime because the GC isn't initialized.
+In betterC mode, every function reachable from `DllMain` should be marked `nothrow @nogc`. The compiler enforces this
+transitively in `@safe` code. In `@trusted` or `@system` code, you must enforce it manually. A stray `@gc` allocation
+(e.g., a D string concatenation with `~`) will compile but crash at runtime because the GC isn't initialized.
 
 **Pattern to catch this at compile time:**
 
@@ -834,17 +820,17 @@ void pluginAttach()
 
 ## Summary Recommendation
 
-| Decision | Recommendation |
-|---|---|
-| **Compiler** | LDC (`ldc2`) — MSVC ABI, COFF output, best Win32 support |
-| **Mode** | `-betterC` — no GC, no druntime, minimal binary |
-| **Linker** | MSVC `link.exe` (auto-detected) or LDC's bundled LLD |
-| **Hooking** | MinHook via `extern(C)` binding for reliability; manual JMP patch for zero deps |
-| **cdecl** | `extern(C)` |
-| **stdcall** | `extern(Windows)` |
-| **thiscall** | Inline asm shim (portable) or `extern(C++)` struct method (MSVC ABI LDC only) |
-| **Globals** | Always `__gshared`, never bare `static` in DLL context |
-| **Object format** | COFF always — never OMF |
+| Decision          | Recommendation                                                                  |
+| ----------------- | ------------------------------------------------------------------------------- |
+| **Compiler**      | LDC (`ldc2`) — MSVC ABI, COFF output, best Win32 support                        |
+| **Mode**          | `-betterC` — no GC, no druntime, minimal binary                                 |
+| **Linker**        | MSVC `link.exe` (auto-detected) or LDC's bundled LLD                            |
+| **Hooking**       | MinHook via `extern(C)` binding for reliability; manual JMP patch for zero deps |
+| **cdecl**         | `extern(C)`                                                                     |
+| **stdcall**       | `extern(Windows)`                                                               |
+| **thiscall**      | Inline asm shim (portable) or `extern(C++)` struct method (MSVC ABI LDC only)   |
+| **Globals**       | Always `__gshared`, never bare `static` in DLL context                          |
+| **Object format** | COFF always — never OMF                                                         |
 
 ```/dev/null/full_build.cmd#L1-10
 rem Full build command for a release ASI plugin
