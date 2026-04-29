@@ -15,6 +15,7 @@ This mod integrates Grand Theft Auto III's two separate rail systems—the subwa
 | **TXD Workshop** | Create/edit textures | GTAMods Wiki |
 | **G-TXD** | Alternative texture editor | Community |
 | **MEd (GTA Map Editor)** | Add objects/stations to map | GTAMods Wiki |
+| **KEd (GTA Map Editor)** | Specialist surveying and tracks.dat inspection | GTAMods Wiki |
 | **Moo Mapper** | Advanced map editing | GTAMods Wiki |
 | **GTA Stuff Toolkit** | Validate DFF/TXD files | gtastuff.com |
 | **Hex Editor** | View/debug binary files | ImHex |

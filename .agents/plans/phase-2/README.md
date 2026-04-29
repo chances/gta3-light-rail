@@ -1,11 +1,26 @@
 # Phase 2 — Track Data Modification
 
+## Tools
+
+**KEd** is the primary survey and authoring tool for this phase. It renders
+the full Liberty City map in 3D, draws `tracks.dat` PATH node chains as linked
+points, and lets you move nodes with the mouse — no in-game launch required
+for most tasks. In-game validation is reserved for §2.4.
+
+- Download: GTAForums / Internet Archive (search `KEd JernejL GTA III map editor`)
+- Supports: GTA III, GTA VC
+- Key features used here: 3D PATH node viewer, orthographic overhead view,
+  collision geometry rendering, radar map overlay
+
+---
+
 ## Carried over from Phase 1
 
-- [ ] **Visualize existing routes** in-game using:
-  1. Launch the game and take the Portland El from the northernmost station
-     south to confirm the full loop is intact.
-  2. Take the Shoreside subway to confirm its loop.
+- [x] **Visualize existing routes** using KEd:
+  1. Load the GTA III install in KEd and inspect `tracks.dat` and `tracks2.dat`
+     node chains in the 3D view.
+  2. Confirm the Portland El loop and Shoreside subway loop are intact and
+     match the extents documented in `routing.md`.
   3. Cross-check the start/end coordinates of each loop against the node
      coordinates documented in `phase-1/routing.md`.
   This is observational — no file changes needed, just a sanity check before
@@ -20,7 +35,7 @@ Already done via `scripts/backup-tracks.ts`. Backups are in
 
 - [x] `tracks.dat` backed up
 - [x] `tracks2.dat` backed up
-- [ ] `train.dat` / `train2.dat` camera files — deferred (see `installer.md`)
+- [ ] `train.dat` / `train2.dat` camera files — deferred to Phase 5 (see `.agents/plans/phase-5/README.md`)
 
 ---
 
@@ -28,15 +43,18 @@ Already done via `scripts/backup-tracks.ts`. Backups are in
 
 Planned route is in `phase-1/routing.md`. Key decisions to resolve first:
 
-- [ ] **Confirm engine supports a third track file.** Test by adding a minimal
+- [x] **Confirm engine supports a third track file.** Test by adding a minimal
   `tracks3.dat` (3–4 nodes) and checking whether the game loads it without
   crashing. If not supported, the connector must be appended to `tracks2.dat`
   after the existing subway nodes.
-- [ ] **Confirm junction node** on the Portland El. The branch-off should be
-  near `(963, 13, 22)` (northernmost El node). Walk the node sequence in
-  `tracks.dat` to find the correct index so the counterclockwise direction
-  is preserved.
-- [ ] **Confirm Callahan Bridge deck height** in-game (estimated Z ≈ 12–15).
+- [ ] **Confirm junction node** on the Portland El using KEd. Open `tracks.dat`
+  in KEd's PATH viewer, locate the node nearest `(963, 13, 22)` (northernmost
+  El node), and note its index. Verify the counterclockwise direction is
+  preserved by checking the preceding and following nodes in the sequence.
+- [ ] **Confirm Callahan Bridge deck height** using KEd. Switch to orthographic
+  overhead view, fly to the Callahan Bridge, and read the Z coordinate of the
+  bridge deck geometry (estimated Z ≈ 12–15). Note the confirmed value for
+  use in the Callahan Junction station node.
 
 ### Workflow
 
@@ -46,7 +64,11 @@ Planned route is in `phase-1/routing.md`. Key decisions to resolve first:
 3. Keep node spacing ~10–15 units (matching the existing files).
 4. Mark station nodes with `stationType` 1 or 2 (left/right exit).
 5. Save as `tracks3.dat` (or append to `tracks2.dat` if needed).
-6. Drop the file into `GTA3/data/paths/` and load the game to test.
+6. Load the file into KEd and inspect the new node chain against the Liberty
+   City map geometry — check for obvious terrain conflicts and verify the
+   route follows the intended alignment before touching the game install.
+7. Drop the file into `GTA3/data/paths/` and proceed to §2.4 for in-game
+   validation.
 
 ### Scripting approach
 
@@ -72,8 +94,13 @@ Deferred from Phase 1. Format is documented in `scripts/backup-tracks.ts`.
 
 ## 2.4 Validate & Iterate
 
-- [ ] Load modified files in-game and ride the new route.
+In-game validation happens here — only after the KEd survey in §2.2 has
+cleared the route of obvious geometry conflicts.
+
+- [ ] Drop `tracks3.dat` into `GTA3/data/paths/` and launch the game.
+- [ ] Ride the full connector route from the Portland El junction to FIA.
 - [ ] Check for terrain clipping, broken segments, and incorrect station exits.
+- [ ] Return to KEd to adjust any problem nodes, then re-test in-game.
 - [ ] Adjust node spacing if train speed feels wrong (closer = slower).
 - [ ] Commit finalised `tracks3.dat` (and camera file) to `dist/` ready for
   the installer (see `installer.md`).
