@@ -35,13 +35,26 @@ Planned route is in `.agents/plans/routing.md`. Key decisions to resolve first:
 - [ ] **Determine how to load the third track file in-game.**
     
   1. [x] Scaffold a Cleo Redux plugin named "light-rail" implemented in TypeScript.
-  2. [ ] Load new assets:
+  2. [x] Research HOW to load new assets — see `asset-loading-research.md`
     
-    - Load new track rights of way, i.e. models and textures
-    - Spawn new train models
-    - Load `tracks3.dat`, somehow?
+    **Findings summary:**
+    - **Models/textures**: Must be pre-installed in a registered IMG archive + IDE entry.
+      CLEO Redux can `REQUEST_MODEL` / `RELEASE_MODEL` at runtime, but cannot bootstrap
+      an asset into the streaming system from an arbitrary file path at runtime.
+    - **Spawn new train models**: Zero scripting opcodes for train creation. All 13 wagons
+      (5 El + 8 Subway) are permanent entities spawned once at game init. Replacing the
+      existing model ID 197 (`"train"`) with a custom DFF is the lowest-friction visual change.
+    - **Load `tracks3.dat`**: Engine hardcodes exactly 2 track files. No extension point exists.
+      Patching it to support a 3rd track requires a C++ ASI plugin; doing it from CLEO Redux
+      JS is technically possible but equivalent in complexity to a compiled ASI.
+    - **Start trains on new tracks**: `m_nTrackId` byte at `CTrain* + 0x29C` controls which
+      track each wagon follows (0 = El, 1 = Subway). Writeable via `WRITE_MEMORY`, but
+      `ProcessControl()` must also be patched to handle value `2` — ASI territory.
     
-    If not supported, this plugin is dead-on-arrival. STOP and reconsider how to integrate a new track alignment with one of the existing trains. Most likely just an extension to the subway alignment.
+    **Decision: extend `tracks2.dat` instead of introducing a 3rd file.**
+    Append the new light rail nodes to the existing subway file. The TypeScript plugin
+    handles station detection (`m_nCurTrackNode`), speed control (`m_fSpeed`), and HUD/UI
+    entirely in script space — no memory patching or companion ASI required.
 
 - [ ] **Confirm junction node** on the Portland El. The branch-off should be near `(963, 13, 22)` (northernmost El
       node). Walk the node sequence in `tracks.dat` to find the correct index so the counterclockwise direction is
