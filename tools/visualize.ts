@@ -13,7 +13,7 @@
  *   Then open http://localhost:8080 and drop in a tracks.dat / tracks2.dat file.
  */
 
-import { fromFileUrl, dirname, join } from "@std/path";
+import { dirname, fromFileUrl, join } from "@std/path";
 import { parseTracksDat } from "../lib/tracks.ts";
 
 const PORT = 8080;
@@ -42,14 +42,19 @@ Deno.serve({ port: PORT }, async (req: Request): Promise<Response> => {
   }
 
   // GET / — serve the visualizer HTML
-  if (req.method === "GET" && (url.pathname === "/" || url.pathname === "/index.html")) {
+  if (
+    req.method === "GET" &&
+    (url.pathname === "/" || url.pathname === "/index.html")
+  ) {
     try {
       const html = await Deno.readTextFile(HTML_PATH);
       return new Response(html, {
         headers: { "content-type": "text/html; charset=utf-8" },
       });
     } catch {
-      return new Response("visualizer.html not found next to visualize.ts", { status: 500 });
+      return new Response("visualizer.html not found next to visualize.ts", {
+        status: 500,
+      });
     }
   }
 
@@ -57,4 +62,6 @@ Deno.serve({ port: PORT }, async (req: Request): Promise<Response> => {
 });
 
 console.log(`Track Visualizer running at http://localhost:${PORT}`);
-console.log(`Drop a tracks.dat or tracks2.dat file into the browser to visualize it.`);
+console.log(
+  `Drop a tracks.dat or tracks2.dat file into the browser to visualize it.`,
+);

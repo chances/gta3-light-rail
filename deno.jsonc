@@ -2,7 +2,13 @@
   "tasks": {
     "find-gta3": "deno run --allow-read --allow-run --allow-write scripts/find-gta3.ts",
     "backup-tracks": "deno run --env-file=.env.gta3 -A scripts/backup-tracks.ts",
-    "visualize": "deno run --watch --allow-read --allow-net tools/visualize.ts"
+    "visualize": "deno run --watch --allow-read --allow-net tools/visualize.ts",
+    // FIXME: https://github.com/denoland/deno/issues/26519
+    // FIXME: https://github.com/denoland/deno/issues/30286
+    "fmt": "deno fmt --ignore=.agents/plans/magic_txd_blip_texture_guide.svg --ignore=\"maps/Liberty City (Simplified).svg\""
+  },
+  "fmt": {
+    "lineWidth": 120
   },
   "imports": {
     "@std/assert": "jsr:@std/assert@1",

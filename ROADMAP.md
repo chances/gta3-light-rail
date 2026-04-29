@@ -1,23 +1,27 @@
 # GTA 3 Light Rail Expansion Mod - Development Plan
 
 ## Project Overview
-This mod integrates Grand Theft Auto III's two separate rail systems—the subway loop and the Portland El—by adding connecting tracks between them, resulting in three total rail lines. The new connecting line extends further to reach Francis International Airport in Shoreside Vale. For detailed information on the existing subway system, see https://www.grandtheftwiki.com/Subway_in_GTA_III.
+
+This mod integrates Grand Theft Auto III's two separate rail systems—the subway loop and the Portland El—by adding
+connecting tracks between them, resulting in three total rail lines. The new connecting line extends further to reach
+Francis International Airport in Shoreside Vale. For detailed information on the existing subway system, see
+https://www.grandtheftwiki.com/Subway_in_GTA_III.
 
 ---
 
 ## Available Tools
 
-| Tool | Purpose | Source |
-|------|---------|--------|
-| **X Train Track Editor** | Create/edit tracks.dat | GTAMods Wiki |
-| **IMG Tool v2.0** | Modify .img archives | Community |
-| **Blender** | 3D modeling, with RW plugin | blender.org |
-| **TXD Workshop** | Create/edit textures | GTAMods Wiki |
-| **G-TXD** | Alternative texture editor | Community |
+| Tool                     | Purpose                     | Source       |
+| ------------------------ | --------------------------- | ------------ |
+| **X Train Track Editor** | Create/edit tracks.dat      | GTAMods Wiki |
+| **IMG Tool v2.0**        | Modify .img archives        | Community    |
+| **Blender**              | 3D modeling, with RW plugin | blender.org  |
+| **TXD Workshop**         | Create/edit textures        | GTAMods Wiki |
+| **G-TXD**                | Alternative texture editor  | Community    |
 | **MEd (GTA Map Editor)** | Add objects/stations to map | GTAMods Wiki |
-| **Moo Mapper** | Advanced map editing | GTAMods Wiki |
-| **GTA Stuff Toolkit** | Validate DFF/TXD files | gtastuff.com |
-| **Hex Editor** | View/debug binary files | ImHex |
+| **Moo Mapper**           | Advanced map editing        | GTAMods Wiki |
+| **GTA Stuff Toolkit**    | Validate DFF/TXD files      | gtastuff.com |
+| **Hex Editor**           | View/debug binary files     | ImHex        |
 
 ### Required Tools
 
@@ -35,10 +39,13 @@ This mod integrates Grand Theft Auto III's two separate rail systems—the subwa
 ### 1.1 Understand Current Track System
 
 The existing rail infrastructure in GTA 3 consists of two separate systems:
-- **Portland El**: An elevated line confined within Portland (see https://www.grandtheftwiki.com/Subway_in_GTA_III for details)
+
+- **Portland El**: An elevated line confined within Portland (see https://www.grandtheftwiki.com/Subway_in_GTA_III for
+  details)
 - **Subway System**: Underground, connected to all three islands
 
 Key technical details:
+
 - Track pathways are stored in `tracks.dat` files located in `./data/paths/` folder
 - `train.dat` sets up cinematic camera views when riding trains
   - `train.dat` handles the Portland El camera system
@@ -52,7 +59,8 @@ Key technical details:
 2. Study the file format structure (binary format with waypoint data)
 3. Open files with a hex editor or dedicated tool to understand node layout
 4. Take screenshots of existing track routes in-game for reference
-5. Decide on distribution architecture: Create a self-extracting executable installer that handles file placement automatically
+5. Decide on distribution architecture: Create a self-extracting executable installer that handles file placement
+   automatically
 
 ### 1.2 Map Out Your Route
 
@@ -92,6 +100,7 @@ Key technical details:
 `GTA3/data/paths/`
 
 #### Files to Back Up
+
 ```
 - tracks.dat (existing Portland El)
 - tracks2.dat (existing subway)
@@ -108,6 +117,7 @@ Key technical details:
 #### Tool Required
 
 X Train Track Editor
+
 - Supports GTA 3 with 3D visualization
 - Superior to older Train Track Editor for this project
 - Allows visual debugging of track placement
@@ -144,6 +154,7 @@ X Train Track Editor
    - Verify file integrity before proceeding
 
 #### Technical Notes
+
 - The game uses node-based paths: linked series of waypoints
 - Each waypoint includes XYZ coordinates
 - Spacing determines speed (closer nodes = slower movement)
@@ -198,6 +209,7 @@ Position_X, Position_Y, Position_Z, Rotation_X, Rotation_Y, Rotation_Z, Frames,
 **Software:** Blender with RenderWare plugin
 
 #### Design Specifications
+
 - **Polygon Count**: 3,000-5,000 polygons (GTA 3 era standard)
 - **Dimensions**: Single or double-car configuration
 - **Components**:
@@ -233,6 +245,7 @@ Position_X, Position_Y, Position_Z, Rotation_X, Rotation_Y, Rotation_Z, Frames,
 Faster, guaranteed compatibility, fewer unknowns
 
 #### Option A vs B Decision Matrix
+
 - Choose **Option A** if you want unique visual identity
 - Choose **Option B** if you want faster initial release/testing
 
@@ -243,6 +256,7 @@ Faster, guaranteed compatibility, fewer unknowns
 RenderWare binary stream (.dff)
 
 #### Export Process
+
 1. In your 3D editor, export as RenderWare DFF
 2. Use appropriate export settings:
    - Enable RenderWare 3.3+ format
@@ -302,6 +316,7 @@ RenderWare binary stream (.dff)
 `lightrail.txd`
 
 #### Texture Organization Example
+
 ```
 lightrail.txd
 ├── lightrail_body (main exterior)
@@ -553,6 +568,7 @@ Each station should include:
 #### Issue Documentation
 
 For each failure, note:
+
 - Station number
 - Exact behavior
 - Error messages
@@ -622,6 +638,7 @@ For each failure, note:
 ## Critical File Reference
 
 ### Directory Structure
+
 ```
 GTA3/
 ├── data/
@@ -641,6 +658,7 @@ GTA3/
 ```
 
 ### File Modification Summary
+
 ```
 FILES TO CREATE:
 - tracks3.dat (new track paths)
@@ -662,53 +680,59 @@ FILES TO BACKUP (don't modify):
 
 ## Potential Challenges & Solutions
 
-| Challenge | Cause | Solution |
-|-----------|-------|----------|
-| Track path clipping through buildings | Waypoint placement in dense areas | Use X Train Track Editor 3D view; adjust waypoints to navigate around structures |
-| Light rail won't spawn in-game | Missing/incorrect model files | Verify DFF/TXD in img archives; check default.ide ID for conflicts |
-| Cinematic camera jittery/jumpy | Camera node spacing too large or small | Review train3.dat format; space nodes every 5-10 frames; smooth transitions |
-| Texture stretching/distortion | UV mapping misalignment in 3D model | Fix UV coordinates in 3D editor before export; verify seam placement |
-| Game crashes on load | File format error or naming mismatch | Verify all file names match default.ide entries; check IMG archive integrity |
-| Station entry zones not working | IPL file syntax error or zone misconfiguration | Review gta3.ipl format; ensure zones positioned at platform edges; verify model IDs |
-| Light rail moves wrong direction | Track data counterclockwise conflict | GTA 3 trains only go counterclockwise; redesign route if necessary |
-| Model appears invisible/white | Texture not loading | Verify TXD filename in default.ide matches actual file; check IMG archive rebuild |
-| Vehicle physics broken (no friction) | handling.cfg parameters out of range | Copy working TRAIN entry; adjust conservatively; test small changes |
-| Overhead catenary lines missing | Objects not placed in map editor | Re-open MEd/Moo Mapper; place pole objects; verify IPL export successful |
+| Challenge                             | Cause                                          | Solution                                                                            |
+| ------------------------------------- | ---------------------------------------------- | ----------------------------------------------------------------------------------- |
+| Track path clipping through buildings | Waypoint placement in dense areas              | Use X Train Track Editor 3D view; adjust waypoints to navigate around structures    |
+| Light rail won't spawn in-game        | Missing/incorrect model files                  | Verify DFF/TXD in img archives; check default.ide ID for conflicts                  |
+| Cinematic camera jittery/jumpy        | Camera node spacing too large or small         | Review train3.dat format; space nodes every 5-10 frames; smooth transitions         |
+| Texture stretching/distortion         | UV mapping misalignment in 3D model            | Fix UV coordinates in 3D editor before export; verify seam placement                |
+| Game crashes on load                  | File format error or naming mismatch           | Verify all file names match default.ide entries; check IMG archive integrity        |
+| Station entry zones not working       | IPL file syntax error or zone misconfiguration | Review gta3.ipl format; ensure zones positioned at platform edges; verify model IDs |
+| Light rail moves wrong direction      | Track data counterclockwise conflict           | GTA 3 trains only go counterclockwise; redesign route if necessary                  |
+| Model appears invisible/white         | Texture not loading                            | Verify TXD filename in default.ide matches actual file; check IMG archive rebuild   |
+| Vehicle physics broken (no friction)  | handling.cfg parameters out of range           | Copy working TRAIN entry; adjust conservatively; test small changes                 |
+| Overhead catenary lines missing       | Objects not placed in map editor               | Re-open MEd/Moo Mapper; place pole objects; verify IPL export successful            |
 
 ---
 
 ## Implementation Timeline Estimate
 
 **Phase 1 (Planning):** 2-4 hours
+
 - Research existing systems
 - Create route map
 - Gather reference materials
 
 **Phase 2 (Tracks):** 4-8 hours
+
 - Extract and study original files
 - Create track paths with editor
 - Design camera path
 - Test track validity
 
 **Phase 3 (3D Modeling):** 8-20 hours
+
 - Model light rail vehicle (or modify existing)
 - UV map and texture
 - Export to DFF/TXD
 - Quality check
 
 **Phase 4 (Integration):** 4-8 hours
+
 - Update default.ide and handling.cfg
 - Import models to IMG archives
 - Create station zones
 - Configure IPL file
 
 **Phase 5 (Testing):** 4-12 hours
+
 - Initial load tests
 - Track functionality verification
 - Refinement and fixes
 - Visual polish and tweaks
 
 **Total Estimated Time:** 22-52 hours
+
 - Minimum (experienced modder, reusing assets): 20 hours
 - Maximum (custom 3D modeling, extensive testing): 50+ hours
 
@@ -734,6 +758,7 @@ Your mod is complete when:
 ## Resources & References
 
 **GTAMods Wiki Documentation:**
+
 - Rail transport systems: https://gtamods.com/wiki/Rail_transport
 - tracks.dat format: https://gtamods.com/wiki/Tracks.dat
 - train.dat format: https://gtamods.com/wiki/Train.dat
@@ -742,12 +767,14 @@ Your mod is complete when:
 - X Train Track Editor: https://gtamods.com/wiki/X_Train_Track_Editor
 
 **Community Resources:**
+
 - LibertyCity.net (mods, guides, tools)
 - GTAForums (modding discussions, help)
 - GTA Modding community Discord servers
 - YouTube tutorials on specific tools
 
 **Related Mods for Reference:**
+
 - Train model replacements (see how others created light rail cars)
 - Subway/rapid transit expansions in GTA San Andreas
 - Custom track mods for other GTA games
@@ -757,13 +784,16 @@ Your mod is complete when:
 ## Notes & Future Expansions
 
 ### Phase 1 Launch Target
+
 Focus on core functionality:
+
 - Basic light rail model (can be simple)
 - Essential stations (4-6 locations)
 - Working track and camera data
 - Minimal visual details
 
 ### Post-Launch Improvements
+
 - Add more detailed vehicles (double-car trains, modern design)
 - Expand station network (more stops)
 - Add interior stations (underground transfer hubs)
@@ -773,6 +803,7 @@ Focus on core functionality:
 - Sound effects (doors, acceleration, bells)
 
 ### Integration with Other Mods
+
 - Compatible with vehicle texture mods
 - Works alongside other map expansion mods
 - Doesn't conflict with existing train system
@@ -780,6 +811,6 @@ Focus on core functionality:
 
 ---
 
-**Document Version:** 1.0  
-**Last Updated:** April 2026  
+**Document Version:** 1.0\
+**Last Updated:** April 2026\
 **For GTA 3 PC Version** (DirectX 8.1 compatible)

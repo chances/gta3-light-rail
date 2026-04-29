@@ -19,9 +19,9 @@ import { parse as parseEnv } from "@std/dotenv";
 import { copy } from "@std/fs/copy";
 import { ensureDir } from "@std/fs/ensure-dir";
 import { exists } from "@std/fs/exists";
-import { join, dirname, fromFileUrl } from "@std/path";
+import { dirname, fromFileUrl, join } from "@std/path";
 import { parseTracksDat, parseTrainDat } from "../lib/tracks.ts";
-import type { TrackFile, CameraFile } from "../lib/tracks.ts";
+import type { CameraFile, TrackFile } from "../lib/tracks.ts";
 
 // ---------------------------------------------------------------------------
 // Config
@@ -48,7 +48,8 @@ async function loadConfig(): Promise<{
   }
 
   // Default backup dir: %USERPROFILE%\Documents\GTA3\Backups
-  const userProfile = Deno.env.get("USERPROFILE") ?? Deno.env.get("HOME") ?? ".";
+  const userProfile = Deno.env.get("USERPROFILE") ?? Deno.env.get("HOME") ??
+    ".";
   const defaultBackupDir = join(userProfile, "Documents", "GTA3", "Backups");
   const backupDir = env["GTA3_BACKUP_DIR"] ?? defaultBackupDir;
 

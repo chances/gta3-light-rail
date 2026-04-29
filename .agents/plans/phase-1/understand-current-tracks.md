@@ -1,4 +1,5 @@
-Most GTA III modding communities use existing tools and documentation** rather than building custom track parsers from scratch.
+Most GTA III modding communities use existing tools and documentation** rather than building custom track parsers from
+scratch.
 
 ### How the Community Actually Does This:
 
@@ -21,6 +22,7 @@ Most GTA III modding communities use existing tools and documentation** rather t
 ### For Phase 1.1 Specifically:
 
 You should:
+
 1. **Locate and backup the original `tracks.dat`** from your GTA III directory
 2. **Use OpenRW or similar tool** to visualize/understand existing track routes
 3. **Document the track structure** in your mod folder (text notes on how many nodes, elevation changes, stations, etc.)

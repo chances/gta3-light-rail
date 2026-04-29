@@ -9,7 +9,7 @@
  */
 
 import { exists } from "@std/fs/exists";
-import { join, dirname, fromFileUrl } from "@std/path";
+import { dirname, fromFileUrl, join } from "@std/path";
 
 // Sentinel file used to verify a directory is a GTA III install root
 const SENTINEL = "gta3.exe";
@@ -179,7 +179,9 @@ async function findGTA3(): Promise<void> {
       }
     } else {
       // GTA3 wasn't listed in any library's apps block; still probe all libraries
-      console.log("  GTA III not listed in any Steam library apps, probing all libraries anyway.");
+      console.log(
+        "  GTA III not listed in any Steam library apps, probing all libraries anyway.",
+      );
       const vdfPath = join(steamPath, "config", "libraryfolders.vdf");
       if (await exists(vdfPath)) {
         const text = await Deno.readTextFile(vdfPath);
@@ -195,7 +197,9 @@ async function findGTA3(): Promise<void> {
     }
     console.log();
   } else {
-    console.log("  Steam registry key not found; skipping Steam library introspection.\n");
+    console.log(
+      "  Steam registry key not found; skipping Steam library introspection.\n",
+    );
   }
 
   // --- Check all candidates ---

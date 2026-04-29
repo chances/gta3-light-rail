@@ -35,12 +35,20 @@ export interface TrackFile {
 
 export interface CameraNode {
   // Fixed camera position (meters)
-  camX: number; camY: number; camZ: number;
+  camX: number;
+  camY: number;
+  camZ: number;
   // Point-at target; (999, 999, 999) means "track the player's train"
-  targetX: number; targetY: number; targetZ: number;
+  targetX: number;
+  targetY: number;
+  targetZ: number;
   // Trigger zone — lower-left and upper-right corners (meters)
-  zoneLX: number; zoneLY: number; zoneLZ: number;
-  zoneUX: number; zoneUY: number; zoneUZ: number;
+  zoneLX: number;
+  zoneLY: number;
+  zoneLZ: number;
+  zoneUX: number;
+  zoneUY: number;
+  zoneUZ: number;
   /** Far clip plane distance (meters) */
   farClip: number;
   /** Near clip plane distance (meters) */
@@ -119,19 +127,19 @@ export function parseTrainDat(text: string): CameraFile {
   for (let i = 0; i < nodeCount; i++) {
     const o = i * FIELDS_PER_NODE;
     nodes.push({
-      camX:     parseFloat(tokens[o + 0]),
-      camY:     parseFloat(tokens[o + 1]),
-      camZ:     parseFloat(tokens[o + 2]),
-      targetX:  parseFloat(tokens[o + 3]),
-      targetY:  parseFloat(tokens[o + 4]),
-      targetZ:  parseFloat(tokens[o + 5]),
-      zoneLX:   parseFloat(tokens[o + 6]),
-      zoneLY:   parseFloat(tokens[o + 7]),
-      zoneLZ:   parseFloat(tokens[o + 8]),
-      zoneUX:   parseFloat(tokens[o + 9]),
-      zoneUY:   parseFloat(tokens[o + 10]),
-      zoneUZ:   parseFloat(tokens[o + 11]),
-      farClip:  parseFloat(tokens[o + 12]),
+      camX: parseFloat(tokens[o + 0]),
+      camY: parseFloat(tokens[o + 1]),
+      camZ: parseFloat(tokens[o + 2]),
+      targetX: parseFloat(tokens[o + 3]),
+      targetY: parseFloat(tokens[o + 4]),
+      targetZ: parseFloat(tokens[o + 5]),
+      zoneLX: parseFloat(tokens[o + 6]),
+      zoneLY: parseFloat(tokens[o + 7]),
+      zoneLZ: parseFloat(tokens[o + 8]),
+      zoneUX: parseFloat(tokens[o + 9]),
+      zoneUY: parseFloat(tokens[o + 10]),
+      zoneUZ: parseFloat(tokens[o + 11]),
+      farClip: parseFloat(tokens[o + 12]),
       nearClip: parseFloat(tokens[o + 13]),
     });
   }
@@ -144,9 +152,12 @@ export function parseTrainDat(text: string): CameraFile {
 // ---------------------------------------------------------------------------
 
 export interface BoundingBox {
-  minX: number; maxX: number;
-  minY: number; maxY: number;
-  minZ: number; maxZ: number;
+  minX: number;
+  maxX: number;
+  minY: number;
+  maxY: number;
+  minZ: number;
+  maxZ: number;
 }
 
 /** Returns the XYZ bounding box of a set of track nodes (in meters). */
@@ -155,8 +166,11 @@ export function trackBounds(nodes: TrackNode[]): BoundingBox {
   const ys = nodes.map((n) => n.y);
   const zs = nodes.map((n) => n.z);
   return {
-    minX: Math.min(...xs), maxX: Math.max(...xs),
-    minY: Math.min(...ys), maxY: Math.max(...ys),
-    minZ: Math.min(...zs), maxZ: Math.max(...zs),
+    minX: Math.min(...xs),
+    maxX: Math.max(...xs),
+    minY: Math.min(...ys),
+    maxY: Math.max(...ys),
+    minZ: Math.min(...zs),
+    maxZ: Math.max(...zs),
   };
 }

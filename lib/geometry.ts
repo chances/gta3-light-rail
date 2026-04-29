@@ -31,7 +31,7 @@ export function closeTrackPath(nodes: TrackNode[]): TrackNode[] {
   if (nodes.length < 2) return nodes;
 
   const first = nodes[0];
-  const last  = nodes[nodes.length - 1];
+  const last = nodes[nodes.length - 1];
 
   const dx = last.x - first.x;
   const dy = last.y - first.y;
