@@ -11,7 +11,7 @@
 
 ---
 
-## 2.1 Backup Original Files
+## 2.1 Backup Original Files (Done)
 
 Already done via `scripts/backup-tracks.ts`. Backups are in `%USERPROFILE%\Documents\GTA3\Backups` (or `GTA3_BACKUP_DIR`
 from `.env.gta3`).
@@ -30,8 +30,9 @@ from `.env.gta3`).
 
 Planned route is in `.agents/plans/routing.md`. Key decisions to resolve first:
 
-- [ ] **Confirm engine supports a third track file.** Test by adding a minimal `tracks3.dat` (3–4 nodes) and checking
-      whether the game loads it without crashing. If not supported, the connector must be appended to `tracks2.dat`
+- [x] **Confirm the game does not crash with a third track file.** Test by adding a minimal `tracks3.dat` (3–4 nodes)
+      and checking whether the game loads it without crashing.
+- [ ] **Determine how to load the third track file.** If not supported, the connector must be appended to `tracks2.dat`
       after the existing subway nodes.
 - [ ] **Confirm junction node** on the Portland El. The branch-off should be near `(963, 13, 22)` (northernmost El
       node). Walk the node sequence in `tracks.dat` to find the correct index so the counterclockwise direction is

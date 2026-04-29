@@ -104,6 +104,26 @@ export function parseTracksDat(text: string): TrackFile {
 }
 
 /**
+ * Serializes an array of track nodes to a tracks*.dat string.
+ *
+ * Format (gtamods.com/wiki/Tracks.dat):
+ *   Line 1:  <nodeCount>
+ *   Lines 2+: <X> <Y> <Z> <stationType> [stationName]
+ *
+ * Coordinates are written to 4 decimal places. stationName is omitted when
+ * absent or empty.
+ */
+export function serializeTracksDat(nodes: TrackNode[]): string {
+  const lines: string[] = [String(nodes.length)];
+  for (const n of nodes) {
+    let line = `${n.x.toFixed(4)} ${n.y.toFixed(4)} ${n.z.toFixed(4)} ${n.stationType}`;
+    if (n.stationName) line += ` ${n.stationName}`;
+    lines.push(line);
+  }
+  return lines.join("\n");
+}
+
+/**
  * Parses a train*.dat file.
  *
  * Format (gtamods.com/wiki/Train.dat):
