@@ -19,6 +19,8 @@ most tasks. In-game validation is reserved for §2.4.
 - Key features used here: 3D PATH node viewer, orthographic overhead view, collision geometry rendering, radar map
   overlay
 
+See [gtatools.com](https://gtatools.com).
+
 ---
 
 ## Carried over from Phase 1
