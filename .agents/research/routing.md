@@ -62,39 +62,42 @@ International Airport** as an at-grade or elevated surface line (distinct from t
 
 > Additional intermediate stops can be added in a later phase once the base route is proven.
 
-| # | Name                       | Island         | Approx. Coords    | Notes                                                                    |
-| - | -------------------------- | -------------- | ----------------- | ------------------------------------------------------------------------ |
-| 1 | **Portland View Junction** | Portland       | `(850, -480, 22)` | El branch junction on the major road between Chinatown and Portland View |
-| 2 | **Callahan**               | Portland       | `(760, -280, 8)`  | At-grade stop on the Callahan Bridge avenue, Portland side               |
-| 3 | **Belleville Park**        | Staunton       | `(tbd, -280, 8)`  | West edge of Staunton Island; verify X in-game after crossing            |
-| 4 | **FIA Terminal**           | Shoreside Vale | `(tbd, -1400, 6)` | Pedestrian-accessible station outside the FIA main terminal              |
+| # | Name                  | Island         | Approx. Coords                              | Notes                                                                     |
+| - | --------------------- | -------------- | ------------------------------------------- | ------------------------------------------------------------------------- |
+| 1 | **Kurowski Junction** | Portland       | `(1062.03, -817.172, 28.1319)`              | Southernmost El station; connector departs south then west at Z = 28.1319 |
+| 2 | **Callahan**          | Portland       | `(tbd, tbd, 38.7339)`                       | On the Callahan Bridge deck; X/Y to be confirmed during node authoring    |
+| 3 | **Belleville Park**   | Staunton       | `(41.8152, -941.429, 24.9781)`              | West edge of Staunton Island, east–west avenue from Callahan Bridge       |
+| 4 | **FIA Terminal**      | Shoreside Vale | `(-718.903, -471.234 to -541.234, 7.54311)` | North end of platform at Y = -471.234; south end at Y = -541.234          |
 
 ### Route Segments
 
 ```
-[Portland El — junction on major road between Chinatown & Portland View]
-  ~(850, -480, 22)          ← branch off El viaduct; El continues its loop
-        ↓ ramp descends south along major road to street grade
-  ~(850, -560, 8)           ← bottom of descent ramp, turn west
-        ↓ run west along the Callahan Bridge avenue median
-  ~(760, -280, 8)           ← [CALLAHAN station] (Portland side)
-        ↓ continue west, rise onto Callahan Bridge deck
-  ~(?, -280, 14)            ← Callahan Bridge midspan
+[Portland El — southernmost station, Kurowski / Chinatown]
+  (1062.03, -817.172, 28.1319) ← [KUROWSKI JUNCTION] depart El, run south
+        ↓ continue south at Z = 28.1319
+        ↓ turn west, run west at Z = 28.1319
+        ↓ ascend ramp to Callahan Bridge deck
+  (tbd, tbd, 38.7339)       ← [CALLAHAN station] on bridge deck
+        ↓ continue west across Callahan Bridge
         ↓ descend off bridge onto Staunton, continue west along same avenue median
-  ~(tbd, -280, 8)           ← cross Staunton Island east → west edge
-  ~(tbd, -280, 8)           ← [BELLEVILLE PARK station] (west edge avenue)
-        ↓ turn north along Staunton west edge avenue
-        ↓ rise onto Shoreside Lift Bridge (lower deck, à la Steel Bridge, Portland OR)
-  ~(tbd, -80, 14)           ← Shoreside Lift Bridge midspan
-        ↓ descend off bridge into Shoreside Vale, join avenue / highway median
-        ↓ continue south-southwest; highway widens and curves north toward FIA
-  ~(tbd, -1200, 6)          ← highway curves north; approach FIA access road
-        ↓ turn west along FIA access road
-  ~(tbd, -1400, 6)          ← [FIA TERMINAL station]
+  (41.8152, -941.429, 24.98)  ← [BELLEVILLE PARK station]
+        ↓ arc northward along west-edge avenue; arc peaks at Z ≈ 31.11
+  (-72.6674, -912.156, 31.113) ← arc complete, heading north
+        ↓ run north along west-edge avenue (X ≈ -72.67)
+  (-72.6833, -657.551, 25.142) ← meets loop road to Shoreside Lift Bridge
+        ↓ rise onto Shoreside Lift Bridge road deck
+  (-150.87, -621.497, 40.996) ← Shoreside Lift Bridge deck
+        ↓ continue across bridge
+  (-555.849, -630.904, 46.5948) ← bridge crossing ends
+        ↓ arc northward, descending
+  (-655.477, -517.937, 25.9064) ← lift_bridge_descender_end; arc complete
+        ↓ second arc, descending south to street grade
+  (-718.903, -471.234, 7.54311) ← arc ends, train faces south
+        ↓ platform run southward
+  (-718.903, -541.234, 7.54311) ← [FIA TERMINAL station] south end of platform
 ```
 
-> **Note:** `tbd` X-coordinates for Staunton and Shoreside Vale segments must be confirmed in-game. The Callahan Bridge
-> avenue runs due east–west; walk the bridge on foot to read the deck Z value. The Shoreside Lift Bridge crossing is
+> **Note:** The Callahan station X/Y remains to be pinned during node authoring. The Shoreside Lift Bridge crossing is
 > modelled after the real-life **Steel Bridge** in Portland, Oregon, where light rail (MAX) shares the lower deck of the
 > lift span with road traffic.
 
@@ -117,13 +120,13 @@ Z
 
 ## Open Questions (resolve in Phase 2)
 
-1. **Junction geometry**: The El loop is counterclockwise — the branch-off node needs to be on the correct side so the
-   train doesn't reverse. Inspect the node sequence near the major road between Chinatown and Portland View; the branch
-   departs southward and immediately begins the descent ramp to street grade.
-2. **Callahan Bridge deck height**: Estimated Z ≈ 12–15. Verify in-game by walking the bridge and reading the Z
-   coordinate. The avenue approach on both sides must slope smoothly to meet the deck.
-3. **Staunton Island crossing**: Confirm that the east–west avenue across Staunton Island has a median wide enough for
-   at-grade track, or whether the alignment must run with traffic in the kerb lane instead.
+1. **Junction geometry**: Confirmed. Connector departs from the southernmost El station at
+   `(1062.03, -817.172, 28.1319)`, running south then west at that elevation before ramping up to the bridge.
+2. **Callahan Bridge deck height**: Confirmed `Z = 38.7339`. Approach ramp ascends from `Z = 28.1319`.
+3. **Staunton Island crossing**: Confirmed. Belleville Park station at `(41.8152, -941.429, 24.9781)`. Line arcs
+   northward at the west-edge T-junction, peaking at `(-72.6674, -912.156, 31.113)`, then runs north to
+   `(-72.6833, -657.551, 25.1422)` where it meets the Shoreside Lift Bridge loop road. Bridge deck at
+   `(-150.87, -621.497, 40.9961)`.
 4. ~~**Staunton west edge avenue**: Confirm the north–south avenue along the west edge of Staunton Island connects
    continuously from the Callahan Bridge avenue to the Shoreside Lift Bridge ramp, and note its X coordinate.~~
    **Resolved:** The east–west Callahan Bridge avenue intersects the north–south avenue at a T-junction; that
@@ -132,7 +135,7 @@ Z
 5. ~~**Shoreside Lift Bridge lower deck**: Confirm whether the bridge geometry allows a shared lower-deck crossing (as
    on Portland's Steel Bridge). If not, the alignment may need an adjacent at-grade or elevated approach.~~
    **Resolved:** The lower deck geometry is compatible with a shared crossing.
-6. **Shoreside Vale highway curve**: Confirm where the highway turns north and where the FIA access road intersection
-   is; this determines the precise location of the turn-west waypoint and the future FIA station.
-7. **FIA terminal pedestrian access**: The future Phase 3 FIA station should terminate within walking distance of the
-   main terminal entrance. Survey the FIA apron perimeter in-game to identify a suitable spot.
+6. **Shoreside Lift Bridge descent**: Confirmed. Bridge crossing ends at `(-555.849, -630.904, 46.5948)`. Arc northward
+   descends to `lift_bridge_descender_end` at `(-655.477, -517.937, 25.9064)`.
+7. **FIA terminal station**: Confirmed. Second arc from `lift_bridge_descender_end` arrives southward-facing at
+   `(-718.903, -471.234, 7.54311)`. Platform runs south to `(-718.903, -541.234, 7.54311)`.

@@ -55,28 +55,26 @@ questions 1–3, 6–7). **Prefer a map editor** over in-game walking — MEd or
 geometry and read world-space XYZ directly without need for a coordinate-display cheat. Fall back to in-game surveying
 via the CLEO Redux plugin (log `GET_PLAYER_COORDINATES` to the console) only if the map editor cannot provide a reading.
 
-- [ ] **Q1 — El junction node.** In MEd (or `tracks.dat` directly), walk the node sequence around the major road between
-      Chinatown and Portland View. Identify the last El node before the road crossing on the southbound
-      (counterclockwise) side. Record its index and XYZ — this is the fork point; the new branch departs from the very
-      next node slot.
+- [x] **Q1 — El junction node.** The southernmost El station platform is at `(1062.03, -817.172, 28.1319)` (Kurowski /
+      Chinatown area). The new alignment departs from this point, running south then turning west at the same elevation
+      (`Z = 28.1319`) before ascending to meet the Callahan Bridge roadway.
 
-- [ ] **Q2 — Callahan Bridge deck height.** Open the Callahan Bridge in the map editor and read the Z of the road
-      surface at mid-span. Confirm the approach grades on both the Portland and Staunton sides ramp smoothly from street
-      level (~7–8) to deck level. Record the exact Z so the bridge-crossing nodes can be authored precisely.
+- [x] **Q2 — Callahan Bridge deck height.** The main road deck of the Callahan Bridge is at `Z = 38.7339`. Approach
+      nodes on the Portland side must ramp up from `Z ≈ 28.13` (El viaduct grade) to `Z = 38.7339` at the bridge deck.
 
-- [ ] **Q3 — Staunton Island crossing median width.** In the map editor, inspect the east–west avenue that the alignment
-      follows from the Callahan Bridge to the west-edge T-junction. Determine whether the painted median is wide enough
-      for a single at-grade track (ideally ≥ 4 units), or whether the alignment must share the kerb lane with traffic
-      instead. Note the avenue's Y coordinate for use as the constant Y value across the Staunton crossing segment.
+- [x] **Q3 — Staunton Island crossing.** Belleville Park station sits at `(41.8152, -941.429, 24.9781)` on the east–west
+      avenue from the Callahan Bridge. At the west-edge T-junction the line arcs northward, completing the turn at
+      `(-72.6674, -912.156, 31.113)`. It then runs north along the west-edge avenue at `X ≈ -72.67` to
+      `(-72.6833, -657.551, 25.1422)`, where it meets the loop road leading to the Shoreside Lift Bridge. The Shoreside
+      Lift Bridge road deck is at `(-150.87, -621.497, 40.9961)`.
 
-- [ ] **Q6 — Shoreside Vale highway curve and FIA access road.** Trace the avenue / highway in the map editor from the
-      Shoreside Lift Bridge southward. Record: 1. The approximate XY where the highway curves north. 2. The XY of the
-      intersection with the FIA access road (the turn-west waypoint). These two points define the shape of the final
-      approach segment.
+- [x] **Q6 — Shoreside Lift Bridge descent.** The line finishes crossing the bridge at `(-555.849, -630.904, 46.5948)`,
+      then sweeps an arc northward, completing the descent at `(-655.477, -517.937, 25.9064)`
+      (`lift_bridge_descender_end`).
 
-- [ ] **Q7 — FIA terminal station site.** Survey the FIA apron perimeter (preferably in the map editor; otherwise on
-      foot in-game) to find a spot within comfortable walking distance of the main terminal entrance. Record the XYZ of
-      the proposed platform centre. This becomes the terminal node for the FIA Terminal station.
+- [x] **Q7 — FIA terminal station site.** Approach revised: from `lift_bridge_descender_end` the line sweeps a second
+      arc to a southward-facing point at `(-718.903, -471.234, 7.54311)`, where the station platform begins. The station
+      platform then runs south to `(-718.903, -541.234, 7.54311)`.
 
 ---
 
@@ -85,17 +83,18 @@ via the CLEO Redux plugin (log `GET_PLAYER_COORDINATES` to the console) only if 
 The new alignment is **electrified** — overhead catenary wire runs the full length of the route. Node Z values must
 account for the alignment type at each segment:
 
-| Segment                                                 | Alignment                              | Approx. Z |
-| ------------------------------------------------------- | -------------------------------------- | --------- |
-| El junction (Chinatown / Portland View major road)      | Elevated, branch off El viaduct        | ~21–22    |
-| Branch descent south to Callahan Bridge avenue          | Ramp down from viaduct to street grade | ~22 → ~7  |
-| Callahan Bridge avenue westward (at-grade median)       | At-grade median                        | ~7–8      |
-| Callahan Bridge crossing                                | Bridge deck                            | ~12–15    |
-| Staunton Island crossing (east edge → west edge avenue) | At-grade median (or with traffic)      | ~7–8      |
-| Staunton west edge avenue, turning north                | At-grade                               | ~7–8      |
-| Shoreside Lift Bridge crossing                          | Bridge deck (à la Steel Bridge, PDX)   | ~12–15    |
-| Shoreside Vale avenue / highway (curves north to FIA)   | At-grade highway median                | ~6–7      |
-| FIA terminal approach (future alignment)                | At-grade, turns west to terminal       | ~5–6      |
+| Segment                                               | Alignment                             | Approx. Z     |
+| ----------------------------------------------------- | ------------------------------------- | ------------- |
+| El junction / Kurowski station (Chinatown)            | Elevated, depart El viaduct southward | 28.13         |
+| Branch runs south then west at El viaduct grade       | Elevated                              | 28.13         |
+| Approach ramp ascending to Callahan Bridge            | Elevated ramp                         | 28.13 → 38.73 |
+| Callahan Bridge crossing                              | Bridge deck                           | 38.73         |
+| Staunton Island crossing (Callahan → Belleville Park) | At-grade / elevated                   | 24.98         |
+| Staunton west-edge arc and north run                  | Elevated, arc peak Z ≈ 31.11          | 24.98–31.11   |
+| Shoreside Lift Bridge approach                        | Elevated, meets loop road             | 25.14         |
+| Shoreside Lift Bridge crossing                        | Bridge deck                           | 40.9961       |
+| Shoreside Vale avenue / highway (curves north to FIA) | At-grade highway median               | ~6–7          |
+| FIA terminal approach (future alignment)              | At-grade, turns west to terminal      | ~5–6          |
 
 Planned route is in `.agents/research/routing.md`. Key decisions to resolve first:
 
@@ -130,20 +129,15 @@ Planned route is in `.agents/research/routing.md`. Key decisions to resolve firs
   > and
   > [`asi-plugin-d-lang.md`](https://github.com/chances/gta3-light-rail/blob/1850e5ff5818fea2366dfb805470498d56132062/.agents/plans/phase-2/asi-plugin-d-lang.md).
 
-- [ ] **Confirm junction node** on the Portland El. The branch-off should be on the major road between Chinatown and
-      Portland View — roughly where the El viaduct crosses that street. Walk the node sequence in `tracks.dat` to find
-      the correct index; the branch must depart the El loop in the counterclockwise direction, and the descent ramp to
-      street grade begins immediately south of the junction node.
-- [ ] **Confirm Callahan Bridge deck height** in-game (estimated Z ≈ 12–15).
+- [x] **Confirm junction node** on the Portland El. Departure point is the southernmost El station at
+      `(1062.03, -817.172, 28.1319)`. The connector runs south then west from this point at `Z = 28.1319`.
+- [x] **Confirm Callahan Bridge deck height.** Confirmed `Z = 38.7339`. Approach ramp ascends from `Z = 28.1319`.
 - [x] **Confirm engine supports a third track file.** Test by adding a minimal `tracks3.dat` (3–4 nodes) and checking
       whether the game loads it without crashing. If not supported, the connector must be appended to `tracks2.dat`
       after the existing subway nodes.
-- [ ] **Confirm junction node** on the Portland El using KEd. Open `tracks.dat` in KEd's PATH viewer, locate the node
-      nearest `(963, 13, 22)` (northernmost El node), and note its index. Verify the counterclockwise direction is
-      preserved by checking the preceding and following nodes in the sequence.
-- [ ] **Confirm Callahan Bridge deck height** using KEd. Switch to orthographic overhead view, fly to the Callahan
-      Bridge, and read the Z coordinate of the bridge deck geometry (estimated Z ≈ 12–15). Note the confirmed value for
-      use in the Callahan Junction station node.
+- [x] **Confirm junction node** on the Portland El using KEd. Departure from southernmost El station at
+      `(1062.03, -817.172, 28.1319)`.
+- [x] **Confirm Callahan Bridge deck height** using KEd. Confirmed `Z = 38.7339`.
 
 ### Workflow
 
